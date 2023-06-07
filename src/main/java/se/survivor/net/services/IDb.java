@@ -10,8 +10,6 @@ public interface IDb {
 
     User getUserByEmail(String email);
 
-    void updateUser(long userId, String username, Date birthDate);
-
     void addUser(UserDTO user);
 
     boolean authenticate(String username, String password);

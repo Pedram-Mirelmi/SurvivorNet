@@ -5,9 +5,11 @@ import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.stereotype.Service;
+import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.models.User;
 
+import java.sql.Date;
 import java.text.ParseException;
 
 @Service
@@ -30,6 +32,21 @@ public class DBService implements IDb {
             throw new InvalidIdException("Invalid user Id");
         }
         return user;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return null;
+    }
+
+    @Override
+    public void addUser(UserDTO user) {
+
+    }
+
+    @Override
+    public boolean authenticate(String username, String password) {
+        return false;
     }
 
 

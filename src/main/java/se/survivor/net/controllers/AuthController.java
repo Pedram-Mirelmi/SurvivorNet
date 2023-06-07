@@ -48,17 +48,10 @@ public class AuthController {
         var sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         String username = userInfo.get("login").getAsString();
         String email = userInfo.get("email").getAsString();
-        Date birthDate = Date.valueOf(sdf.parse(userInfo.get("created_at")
-                .getAsString())
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .minusYears(18));
         try {
             User user = db.getUserByEmail(email);
-            db.updateUser(user.getUserId(), username, birthDate);
         } catch (InvalidIdException e) { // new User
-            db.addUser(new UserDTO(0, username, username, email, birthDate, Date.valueOf(LocalDate.now()), "",  -1, -1));
+            db.addUser(new UserDTO(0, username, username, email, null, Date.valueOf(LocalDate.now()), "",  -1, -1));
         }
         return Map.of(STATUS, SUCCESS,
                 AUTHORIZATION, JWTUtility.generateToken(username),
