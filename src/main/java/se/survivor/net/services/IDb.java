@@ -29,4 +29,6 @@ public interface IDb {
     List<User> getFollowers(Long userId);
 
     List<User> getFollowings(Long userId);
+
+    List<User> searchUsers(String query);
 }

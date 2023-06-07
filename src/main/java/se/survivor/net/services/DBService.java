@@ -158,7 +158,19 @@ public class DBService implements IDb {
         return followings;
     }
 
-    
+    @Override
+    public List<User> searchUsers(String query) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        var resultList = entityManager.createQuery(
+                "SELECT u FROM User u " +
+                "WHERE u.username LIKE '%:query%' " +
+                "OR u.name LIKE '%:query%' " +
+                "OR u.email LIKE '%:query%'")
+                .setParameter("query", query)
+                .getResultList();
+        entityManager.close();
+        return resultList;
+    }
 
 
 }

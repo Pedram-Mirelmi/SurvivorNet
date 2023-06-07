@@ -47,5 +47,7 @@ public class UserController {
     }
 
     @GetMapping("api/users/search")
-    public
+    public List<UserDTO> searchUsers(@RequestParam(QUERY) String query) {
+        return dbService.searchUsers(query).stream().map(UserDTO::new);
+    }
 }
