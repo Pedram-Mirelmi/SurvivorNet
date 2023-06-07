@@ -13,10 +13,13 @@ public class Constants {
     public static final String STATUS = "status";
     public static final String SUCCESS = "success";
     public static final String COUNT = "count";
-
+    public static final String USER = "user";
+    public static final String POSTS = "posts";
 
     public static final String COMMENT_ID = "commentId";
     public static final String VOTE = "vote";
     public static final String LIKES = "likes";
     public static final String DISLIKES = "dislikes";
+    public static final String FOLLOWERS = "followers";
+    public static final String FOLLOWINGS = "followings";
 }
