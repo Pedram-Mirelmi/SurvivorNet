@@ -1,6 +1,7 @@
 package se.survivor.net.models;
 
 import jakarta.persistence.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
 import java.util.Set;
@@ -16,7 +17,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -41,17 +41,32 @@ public class User {
     @JoinColumn(name = "backgroundPicId")
     private Picture backgroundPic;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId")
-    private Set<Post> posts;
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "postId")
+//    private Set<Post> posts;
 
-    public User(String username, String name, String email, Date birthDate, Date joinedAt, Picture profilePic, Picture backgroundPic) {
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "follows",
+                joinColumns = {"userId"},
+                inverseJoinColumns = {"followerId"})
+    private Set<User> followings;
+
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "follows",
+            joinColumns = {"userId"},
+            inverseJoinColumns = {"followeeId"})
+    private Set<User> followers;
+
+    public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
+        this.password = password;
         this.name = name;
         this.email = email;
         this.birthDate = birthDate;
         this.joinedAt = joinedAt;
         this.profilePic = profilePic;
+        this.bio = bio;
         this.backgroundPic = backgroundPic;
     }
 
@@ -118,11 +133,31 @@ public class User {
         this.backgroundPic = backgroundPic;
     }
 
-    public Set<Post> getPosts() {
-        return posts;
-    }
+//    public Set<Post> getPosts() {
+//        return posts;
+//    }
 
     public String getBio() {
         return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Set<User> getFollowings() {
+        return followings;
+    }
+
+    public Set<User> getFollowers() {
+        return followers;
     }
 }

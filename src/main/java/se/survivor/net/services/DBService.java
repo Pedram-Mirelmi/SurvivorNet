@@ -4,13 +4,17 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
+import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 
 import java.sql.Date;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class DBService implements IDb {
@@ -25,8 +29,34 @@ public class DBService implements IDb {
     }
 
     @Override
+    public void addUser(@NotNull String username,
+                        @NotNull String name,
+                        @NotNull String password,
+                        @NotNull String email,
+                        Date birthDate,
+                        @NotNull String bio) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        entityManager.persist(new User(username, password, name, email, birthDate, Date.valueOf(LocalDate.now()), "", null, null));
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+    @Override
     public User getUserById(Long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            User user = getUserById(userId, entityManager);
+            entityManager.close();
+            return user;
+        }
+        catch (Exception e) {
+            entityManager.close();
+            throw e;
+        }
+    }
+
+    public User getUserById(Long userId, EntityManager entityManager) {
         User user = entityManager.find(User.class, userId);
         if(user == null) {
             throw new InvalidIdException("Invalid user Id");
@@ -34,20 +64,101 @@ public class DBService implements IDb {
         return user;
     }
 
+
+
     @Override
-    public User getUserByEmail(String email) {
-        return null;
+    public User getUserByUsername(String username) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            User user = getUserByUsername(username, entityManager);
+            entityManager.close();
+            return user;
+        }
+        catch (Exception e) {
+            entityManager.close();
+            throw e;
+        }
+    }
+
+    public User getUserByUsername(String username, EntityManager entityManager) {
+        var resultList = entityManager.createQuery("SELECT u FROM User u WHERE u.username=:username")
+                .setParameter("username", username)
+                .getResultList();
+        if(resultList.isEmpty()) {
+            throw new InvalidIdException("Invalid Username");
+        }
+        return (User) resultList.get(0);
     }
 
     @Override
-    public void addUser(UserDTO user) {
+    public User getUserByEmail(String email) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            User user = getUserByEmail(email, entityManager);
+            entityManager.close();
+            return user;
+        }
+        catch (Exception e) {
+            entityManager.close();
+            throw e;
+        }
+    }
 
+    public User getUserByEmail(String email, EntityManager entityManager) {
+        var resultList = entityManager.createQuery("SELECT u FROM User u WHERE u.email=:email")
+                .setParameter("email", email)
+                .getResultList();
+        if(resultList.isEmpty()) {
+            throw new InvalidIdException("Invalid email");
+        }
+        return (User) resultList.get(0);
     }
 
     @Override
     public boolean authenticate(String username, String password) {
-        return false;
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        User user = getUserByUsername(username, entityManager);
+        return user.getPassword().equals(password);
     }
+
+    @Override
+    public List<Post> getUserPosts(Long userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        var resultList = entityManager.createQuery("SELECT p FROM Post p WHERE p.user.userId=:userId")
+                .setParameter("userId", userId)
+                .getResultList();
+        entityManager.close();
+        return resultList;
+    }
+
+    @Override
+    public List<User> getFollowers(Long userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        User user = entityManager.find(User.class, userId);
+        if(user == null) {
+            throw new InvalidIdException("Invalid user Id");
+        }
+        var followers = user.getFollowers().stream().toList();
+        entityManager.close();
+        return followers;
+    }
+
+    @Override
+    public List<User> getFollowings(Long userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        User user = entityManager.find(User.class, userId);
+        if(user == null) {
+            throw new InvalidIdException("Invalid user Id");
+        }
+        var followings = user.getFollowings().stream().toList();
+        entityManager.close();
+        return followings;
+    }
+
+    
 
 
 }
