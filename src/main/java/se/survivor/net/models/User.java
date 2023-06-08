@@ -47,15 +47,15 @@ public class User {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-                joinColumns = {"userId"},
-                inverseJoinColumns = {"followerId"})
+                joinColumns = {@JoinColumn(name = "userId")},
+                inverseJoinColumns = {@JoinColumn(name = "followerId")})
     private Set<User> followings;
 
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-            joinColumns = {"userId"},
-            inverseJoinColumns = {"followeeId"})
+            joinColumns = {@JoinColumn( name = "userId")},
+            inverseJoinColumns = {@JoinColumn(name = "followeeId")})
     private Set<User> followers;
 
     public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {

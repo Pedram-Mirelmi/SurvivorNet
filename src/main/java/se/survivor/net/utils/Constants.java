@@ -22,4 +22,5 @@ public class Constants {
     public static final String DISLIKES = "dislikes";
     public static final String FOLLOWERS = "followers";
     public static final String FOLLOWINGS = "followings";
+    public static final String QUERY = "query";
 }
