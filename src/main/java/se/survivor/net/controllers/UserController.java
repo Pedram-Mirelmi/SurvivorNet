@@ -8,6 +8,7 @@ import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 import se.survivor.net.services.DBService;
 import se.survivor.net.services.IDb;
+import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
 import java.util.Map;
@@ -46,8 +47,41 @@ public class UserController {
                 FOLLOWINGS, dbService.getFollowings(userId).stream().map(UserDTO::new));
     }
 
+    @PostMapping("api/users/follow/{userId}")
+    public Map<String, Object> followUser(@PathVariable(USER_ID) Long userid,
+                                          @RequestHeader(AUTHORIZATION) String jwtToken) {
+        String username = JWTUtility.getUsernameFromToken(jwtToken);
+        boolean result = dbService.follow(username, userid);
+        return Map.of(STATUS, result ? SUCCESS : FAIL);
+    }
+
+    @DeleteMapping("api/users/follow/{userId}")
+    public Map<String, Object> unfollowUser(@PathVariable(USER_ID) Long userid,
+                                          @RequestHeader(AUTHORIZATION) String jwtToken) {
+        String username = JWTUtility.getUsernameFromToken(jwtToken);
+        boolean result = dbService.unfollow(username, userid);
+        return Map.of(STATUS, result ? SUCCESS : FAIL);
+    }
+
+    @PostMapping("api/users/block/{userId}")
+    public Map<String, Object> block(@PathVariable(USER_ID) Long userid,
+                                          @RequestHeader(AUTHORIZATION) String jwtToken) {
+        String username = JWTUtility.getUsernameFromToken(jwtToken);
+        boolean result = dbService.block(username, userid);
+        return Map.of(STATUS, result ? SUCCESS : FAIL);
+    }
+
+    @DeleteMapping("api/users/block/{userId}")
+    public Map<String, Object> unblock(@PathVariable(USER_ID) Long userid,
+                                            @RequestHeader(AUTHORIZATION) String jwtToken) {
+        String username = JWTUtility.getUsernameFromToken(jwtToken);
+        boolean result = dbService.unblock(username, userid);
+        return Map.of(STATUS, result ? SUCCESS : FAIL);
+    }
     @GetMapping("api/users/search")
     public List<UserDTO> searchUsers(@RequestParam(QUERY) String query) {
         return dbService.searchUsers(query).stream().map(UserDTO::new).toList();
     }
+
+
 }

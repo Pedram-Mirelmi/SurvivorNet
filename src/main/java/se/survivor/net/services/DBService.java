@@ -172,5 +172,102 @@ public class DBService implements IDb {
         return resultList;
     }
 
+    @Override
+    public boolean follow(String followerUsername, Long followeeId) {
+        try {
+
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            User follower = getUserByUsername(followerUsername, entityManager);
+            User followee = entityManager.find(User.class, followeeId);
+            if(followee == null) {
+                throw new InvalidIdException("Invalid User Id");
+            }
+            follower.getFollowings().add(followee);
+            followee.getFollowers().add(follower);
+            entityManager.getTransaction().commit();
+            entityManager.close();
+            return true;
+        } catch (InvalidIdException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean unfollow(String unfollowerUsername, Long unfolloweeId) {
+        try {
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            User follower = getUserByUsername(unfollowerUsername, entityManager);
+            User followee = entityManager.find(User.class, unfolloweeId);
+            if(followee == null) {
+                throw new InvalidIdException("Invalid User Id");
+            }
+            follower.getFollowings().remove(followee);
+            followee.getFollowers().remove(follower);
+            entityManager.getTransaction().commit();
+            entityManager.close();
+            return true;
+        }
+        catch (InvalidIdException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean block(String blockerUsername, Long blockeeId) {
+        try {
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            User blocker = getUserByUsername(blockerUsername, entityManager);
+            User blockee = entityManager.find(User.class, blockeeId);
+            if(blockee == null) {
+                throw new InvalidIdException("Invalid User Id");
+            }
+            blocker.getBlockList().add(blockee);
+            blockee.getBlockedList().add(blocker);
+            entityManager.getTransaction().commit();
+            entityManager.close();
+            return true;
+        }
+        catch (InvalidIdException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            return false;
+        }
+
+    }
+
+    @Override
+    public boolean unblock(String unblockerUsername, Long unblockeeId) {
+        try {
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+            User blocker = getUserByUsername(unblockerUsername, entityManager);
+            User blockee = entityManager.find(User.class, unblockeeId);
+            if(blockee == null) {
+                throw new InvalidIdException("Invalid User Id");
+            }
+            blocker.getBlockList().remove(blockee);
+            blockee.getBlockedList().remove(blocker);
+            entityManager.getTransaction().commit();
+            entityManager.close();
+            return true;
+        }
+        catch (InvalidIdException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
 
 }

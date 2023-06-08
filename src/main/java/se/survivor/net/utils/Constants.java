@@ -12,6 +12,7 @@ public class Constants {
     public static final String BIRTHDATE = "birthDate";
     public static final String STATUS = "status";
     public static final String SUCCESS = "success";
+    public static final String FAIL = "fail";
     public static final String COUNT = "count";
     public static final String USER = "user";
     public static final String POSTS = "posts";

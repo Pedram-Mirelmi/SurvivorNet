@@ -1,7 +1,6 @@
 package se.survivor.net.services;
 
 import org.jetbrains.annotations.NotNull;
-import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 
@@ -31,4 +30,12 @@ public interface IDb {
     List<User> getFollowings(Long userId);
 
     List<User> searchUsers(String query);
+
+    boolean follow(String followerUsername, Long followeeId);
+
+    boolean unfollow(String unfollowerUsername, Long unfolloweeId);
+
+    boolean block(String blockerUsername, Long blockeeId);
+
+    boolean unblock(String unblockerUsername, Long unblockeeId);
 }
