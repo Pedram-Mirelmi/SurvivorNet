@@ -51,7 +51,7 @@ public class AuthController {
         try {
             User user = db.getUserByEmail(email);
         } catch (InvalidIdException e) { // new User
-            db.addUser(new UserDTO(0, username, username, email, null, Date.valueOf(LocalDate.now()), "",  -1, -1));
+            db.addUser(username, username, null, email, null, "");
         }
         return Map.of(STATUS, SUCCESS,
                 AUTHORIZATION, JWTUtility.generateToken(username),
@@ -87,7 +87,7 @@ public class AuthController {
             String email = Objects.requireNonNull(body.get(EMAIL));
             Date birthDate = Date.valueOf(body.get(BIRTHDATE));
 
-            db.addUser(new UserDTO(0, username, name, email, birthDate, Date.valueOf(LocalDate.now()), "", -1, -1));
+            db.addUser(username, username, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
             return Map.of(STATUS, SUCCESS,
                     AUTHORIZATION, authToken);
