@@ -13,7 +13,7 @@ public class JWTUtility {
 
     private static final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    private static final SecretKeySpec secret = new SecretKeySpec("'===========================baloot2023==========================='".getBytes(), signatureAlgorithm.getJcaName());
+    private static final SecretKeySpec secret = new SecretKeySpec(Secret.jwtKey, signatureAlgorithm.getJcaName());
 
 
 
