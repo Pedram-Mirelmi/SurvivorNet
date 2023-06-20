@@ -38,4 +38,12 @@ public interface IDb {
     boolean block(String blockerUsername, Long blockeeId);
 
     boolean unblock(String unblockerUsername, Long unblockeeId);
+
+    void addPicture(long userId);
+
+    List<Post> getUserHomePosts(long userId, int chunk);
+
+    long getPostCommentCount(long postId);
+
+    long getPostReactionCount(long postId);
 }

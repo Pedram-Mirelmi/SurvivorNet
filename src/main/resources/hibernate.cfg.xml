@@ -22,6 +22,7 @@
 
         <mapping class="se.survivor.net.models.User"/>
         <mapping class="se.survivor.net.models.Picture"/>
+        <mapping class="se.survivor.net.models.Post"/>
 
 
     </session-factory>

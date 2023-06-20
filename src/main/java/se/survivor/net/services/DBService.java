@@ -6,8 +6,8 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
+import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 
@@ -269,5 +269,22 @@ public class DBService implements IDb {
         }
     }
 
+    @Override
+    public void addPicture(long userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        User user = entityManager.find(User.class, userId);
+        if(user == null) {
+            throw new InvalidIdException("Invalid user id");
+        }
+
+        Picture picture = new Picture(user);
+
+        entityManager.persist(picture);
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
 
 }
