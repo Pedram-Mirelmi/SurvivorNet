@@ -46,4 +46,6 @@ public interface IDb {
     long getPostCommentCount(long postId);
 
     long getPostReactionCount(long postId);
+    
+    void addFollow(long followerId, long followeeId);
 }

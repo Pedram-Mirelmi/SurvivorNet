@@ -45,30 +45,30 @@ public class User {
 //    @JoinColumn(name = "postId")
 //    private Set<Post> posts;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-                joinColumns = {@JoinColumn(name = "userId")},
-                inverseJoinColumns = {@JoinColumn(name = "followerId")})
+                joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")},
+                inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followeeId")})
     private Set<User> followings;
 
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-            joinColumns = {@JoinColumn( name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "followeeId")})
+            joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "followeeId")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")})
     private Set<User> followers;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn(name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "blockerId")})
+            joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockeeId")})
     private Set<User> blockList;
 
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn( name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "blockeeId")})
+            joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "blockeeId")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")})
     private Set<User> blockedList;
 
     public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
