@@ -38,7 +38,7 @@ public class PostService {
             throw new InvalidValueException("Invalid negative chunk value");
         }
         User user = dbService.getUserByUsername(username);
-        List<Post> posts = dbService.getUserPosts(user.getUserId());
+        List<Post> posts = dbService.getUserPostsDTO(user.getUserId());
         return posts.stream().map(
                 p -> new PostDTO(
                         p,

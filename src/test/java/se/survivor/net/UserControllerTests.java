@@ -88,7 +88,7 @@ class UserControllerTests {
     @Order(3)
     void addFollowing()
     {
-        db.addFollow(1, 2);
+        db.changeFollow(1, 2, true);
     }
 
 }
