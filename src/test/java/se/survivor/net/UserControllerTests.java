@@ -29,13 +29,24 @@ class UserControllerTests {
 
     @Test
     @Order(1)
-    void testAddUser() {
+    void testAddUser1() {
         db.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram!");
+    }
+
+    @Test
+    @Order(1)
+    void testAddUser2() {
+        db.addUser("Mina",
+                "mina",
+                "123",
+                "mina.ilkhani00@gmail.com",
+                null,
+                "This is Mina!");
     }
 
     @Test
@@ -74,5 +85,11 @@ class UserControllerTests {
         assertTrue(db.authenticate("Pedram", "123"));
     }
 
+    @Test
+    @Order(3)
+    void addFollowing()
+    {
+        db.addFollow(1, 2);
+    }
 
 }

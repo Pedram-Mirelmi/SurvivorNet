@@ -269,5 +269,19 @@ public class DBService implements IDb {
         }
     }
 
+    @Override
+    public void addFollow(long followerId, long followeeId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        User follower = entityManager.find(User.class, followerId);
+        User followee = entityManager.find(User.class, followeeId);
+
+        // one way is enough to store both ways!
+        follower.getFollowings().add(followee);
+
+        entityManager.getTransaction().commit();
+    }
+
 
 }

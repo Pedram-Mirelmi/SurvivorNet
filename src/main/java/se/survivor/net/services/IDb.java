@@ -38,4 +38,6 @@ public interface IDb {
     boolean block(String blockerUsername, Long blockeeId);
 
     boolean unblock(String unblockerUsername, Long unblockeeId);
+
+    void addFollow(long followerId, long followeeId);
 }
