@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.survivor.net.models.User;
-import se.survivor.net.services.DBService;
-import se.survivor.net.services.IDb;
+import se.survivor.net.services.DbService;
 
 import java.text.ParseException;
 
@@ -16,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class UserControllerTests {
 
-    IDb db;
+    DbService db;
 
     @BeforeEach
     void setUp() throws ParseException {
-        db = new DBService();
+        db = new DbService();
     }
 
     @Test

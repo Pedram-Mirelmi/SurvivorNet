@@ -5,12 +5,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.*;
-import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.exceptions.InvalidRequestParamsException;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
-import se.survivor.net.services.IDb;
 
 import se.survivor.net.utils.JWTUtility;
 import se.survivor.net.utils.Secret;
@@ -24,8 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Map;
 import java.util.Objects;
 
