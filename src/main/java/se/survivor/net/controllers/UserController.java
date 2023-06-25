@@ -3,11 +3,9 @@ package se.survivor.net.controllers;
 import static se.survivor.net.utils.Constants.*;
 
 import org.springframework.web.bind.annotation.*;
+import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.models.Post;
-import se.survivor.net.models.User;
-import se.survivor.net.services.DBService;
-import se.survivor.net.services.IDb;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -30,7 +28,7 @@ public class UserController {
 
     @GetMapping("api/users/{userId}/profile")
     public Map<String, Object> getUserProfile(@PathVariable(USER_ID) Long userId, @RequestHeader(AUTHORIZATION) String jwtToken) {
-        List<Post> posts = dbService.getUserPosts(userId);
+        List<PostDTO> posts = dbService.getUserPosts(userId);
         return Map.of(USER_ID, userId,
                 POSTS, posts);
     }

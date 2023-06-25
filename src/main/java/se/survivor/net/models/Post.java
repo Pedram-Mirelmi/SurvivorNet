@@ -2,8 +2,10 @@ package se.survivor.net.models;
 
 
 import jakarta.persistence.*;
+import se.survivor.net.services.CommentService;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -13,7 +15,7 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long postId;
 
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
 
@@ -32,11 +34,19 @@ public class Post {
 
     @OneToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "parentId")
-    private Set<Post> children;
+    private List<Post> children;
 
     @OneToMany(targetEntity = Picture.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "postId", referencedColumnName = "pictureId")
-    private Set<Picture> pictures;
+    private List<Picture> pictures;
+
+    @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    private List<Comment> comments;
+
+    @OneToMany(targetEntity = PostReaction.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    private List<PostReaction> reactions;
 
 
     public Post() {
@@ -80,5 +90,13 @@ public class Post {
 
     public Set<Picture> getPictures() {
         return pictures;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public List<PostReaction> getReactions() {
+        return reactions;
     }
 }

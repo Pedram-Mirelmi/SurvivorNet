@@ -24,4 +24,11 @@ public class Constants {
     public static final String FOLLOWERS = "followers";
     public static final String FOLLOWINGS = "followings";
     public static final String QUERY = "query";
+    public static final String POST_ID = "postId";
+    public static final String CHUNK = "chunk";
+    public static final String TITLE = "title";
+
+    public static final String CAPTION = "caption";
+    public static final String PARENT_ID = "parentID";
+    public static final String TRUE = "true";
 }
