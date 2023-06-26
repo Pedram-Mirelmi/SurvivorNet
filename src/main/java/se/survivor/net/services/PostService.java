@@ -33,39 +33,21 @@ public class PostService {
         ).toList();
     }
 
-    public List<PostDTO> getUserPosts(String username, int chunk) throws InvalidValueException {
+    public List<PostDTO> getUserPostsDTO(String username, int chunk) throws InvalidValueException {
         if(chunk < 1) {
             throw new InvalidValueException("Invalid negative chunk value");
         }
         User user = dbService.getUserByUsername(username);
-        List<Post> posts = dbService.getUserPosts(user.getUserId());
-        return posts.stream().map(
-                p -> new PostDTO(
-                        p,
-                        dbService.getPostCommentCount(p.getPostId()),
-                        dbService.getPostReactionCount(p.getPostId()),
-                        null)
-        ).toList();
+        return dbService.getUserPostsDTO(user.getUserId(), chunk);
     }
 
     public PostDTO getPostDTO(long postId) {
-        return new PostDTO(dbService.getPost(postId),
-                dbService.getPostCommentCount(postId),
-                dbService.getPostReactionCount(postId),
-                dbService.getPostComments(postId));
+        return dbService.getPostDTO(postId);
     }
 
-
-    public PostDTO getPostDTOWithComments(long postId) {
-        Post post = dbService.getPost(postId);
-        return new PostDTO(post,
-                dbService.getPostCommentCount(postId),
-                dbService.getPostReactionCount(postId),
-                commentService.getPostComments(postId));
-    }
 
     public boolean addPost(String username, String title, String caption, long parentId) {
         dbService.addPost(username, title, caption, parentId);
-
+        return true;
     }
 }

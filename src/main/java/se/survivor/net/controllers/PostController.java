@@ -19,16 +19,10 @@ import static se.survivor.net.utils.Constants.*;
 @RequestMapping("/api/posts/")
 public class PostController {
 
-    private DbService dbService;
     private PostService postService;
-    private CommentService commentService;
 
-    PostController(DbService dbService,
-                   PostService postService,
-                   CommentService commentService) {
-        this.dbService = dbService;
+    PostController(PostService postService) {
         this.postService = postService;
-        this.commentService = commentService;
     }
 
     @GetMapping("home")
@@ -41,7 +35,7 @@ public class PostController {
     @GetMapping("{postId}")
     public PostDTO getPostDTO(
             @PathVariable(POST_ID) long postId) {
-        return postService.getPostDTOWithComments(postId);
+        return postService.getPostDTO(postId);
     }
 
     @PostMapping("")
