@@ -19,16 +19,10 @@ import static se.survivor.net.utils.Constants.*;
 @RequestMapping("/api/posts/") // www.survivor-net.com/api/posts/******
 public class PostController {
 
-    private DbService dbService;
     private PostService postService;
-    private CommentService commentService;
 
-    PostController(DbService dbService,
-                   PostService postService,
-                   CommentService commentService) {
-        this.dbService = dbService;
+    PostController(PostService postService) {
         this.postService = postService;
-        this.commentService = commentService;
     }
 
 
@@ -42,7 +36,7 @@ public class PostController {
     @GetMapping("{postId}")
     public PostDTO getPostDTO(
             @PathVariable(POST_ID) long postId) {
-        return postService.getPostDTOWithComments(postId);
+        return postService.getPostDTO(postId);
     }
 
     // www.survivor-net.com/api/posts/
@@ -56,10 +50,12 @@ public class PostController {
         if(postInfo.containsKey(PARENT_ID)) {
             parentId = Long.parseLong(postInfo.get(PARENT_ID));
         }
-        postService.addPost(JWTUtility.getUsernameFromToken(jwtToken),
+        postService.addPost(
+                JWTUtility.getUsernameFromToken(jwtToken),
                 title,
                 caption,
-                parentId);
+                parentId
+        );
         return Map.of(SUCCESS, TRUE);
     }
 

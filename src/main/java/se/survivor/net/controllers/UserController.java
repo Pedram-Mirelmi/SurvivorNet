@@ -5,8 +5,8 @@ import static se.survivor.net.utils.Constants.*;
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
-import se.survivor.net.models.Post;
 import se.survivor.net.services.DbService;
+import se.survivor.net.services.PostService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -16,9 +16,11 @@ import java.util.Map;
 public class UserController {
 
     final private DbService dbService;
+    final private PostService postService;
 
-    public UserController(DbService dbService) {
+    public UserController(DbService dbService, PostService postService) {
         this.dbService = dbService;
+        this.postService = postService;
     }
 
 
@@ -28,8 +30,11 @@ public class UserController {
     }
 
     @GetMapping("api/users/{userId}/profile")
-    public Map<String, Object> getUserProfile(@PathVariable(USER_ID) Long userId, @RequestHeader(AUTHORIZATION) String jwtToken) {
-        List<PostDTO> posts = dbService.getUserPosts(userId);
+    public Map<String, Object> getUserProfile(
+        @RequestHeader(AUTHORIZATION) String jwtToken,
+        @PathVariable(USER_ID) Long userId,
+        @RequestParam int chunk) {
+        List<PostDTO> posts = postService.getUserPosts(userId, chunk);
         return Map.of(USER_ID, userId,
                 POSTS, posts);
     }

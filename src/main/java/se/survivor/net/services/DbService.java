@@ -212,7 +212,7 @@ public class DbService {
             entityManager.getTransaction().commit();
             entityManager.close();
             return true;
-        }
+      }
         catch (InvalidIdException e) {
             throw e;
         }
@@ -264,15 +264,18 @@ public class DbService {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public List<Post> getUserPosts(Long userId) {
+    public List<PostDTO> getUserPostsDTO(Long userId, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        var resultList = entityManager.createQuery("SELECT p FROM Post p WHERE p.user.userId=:userId")
+        List<Post> resultList = entityManager.createQuery("SELECT p FROM Post p WHERE p.user.userId=:userId")
                 .setParameter("userId", userId)
                 .getResultList();
         entityManager.close();
 
-        return resultList.stream().map( (Post p) -> new PostDTO(p, p.getComments().size(), p.getReactions().size(), p.getParent()));
+        return resultList.stream().map(
+                p -> new PostDTO(p, p.getComments().size(), p.getReactions().size(), p.getParent()
+                )
+        ).toList();
     }
 
 
@@ -324,21 +327,28 @@ public class DbService {
         return post;
     }
 
-    public List<CommentDTO> getPostComments(long postId) {
-
+    public PostDTO getPostDTO(long postId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        Post post = getPost(postId);
+        return new PostDTO(post, getPostCommentCount(postId), getPostReactionCount(postId), post.getParent());
     }
 
-    public boolean addPost(String username, String title, String caption, long parentId) {
+    public List<CommentDTO> getPostComments(long postId) {
+        return null; // TODO add chunk
+    }
+
+    public void addPost(String username, String title, String caption, long parentId) {
         Post parent = null;
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         if(parentId != -1) {
             parent = getPost(parentId, entityManager);
         }
-        User user = getUserByUsername(username, entityManager)
-        Post post = new Post()
-
-
+        User user = getUserByUsername(username, entityManager);
+        Post post = new Post(user, title, caption, parent);
+        entityManager.persist(post);
+        entityManager.getTransaction().commit();
+        entityManager.close();
     }
 
     public void addReaction(long userId, long postId, int reactionType) {
