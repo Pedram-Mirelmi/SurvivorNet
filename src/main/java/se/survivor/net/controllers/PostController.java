@@ -16,7 +16,7 @@ import java.util.Objects;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api/posts/")
+@RequestMapping("/api/posts/") // www.survivor-net.com/api/posts/******
 public class PostController {
 
     private PostService postService;
@@ -24,6 +24,7 @@ public class PostController {
     PostController(PostService postService) {
         this.postService = postService;
     }
+
 
     @GetMapping("home")
     public List<PostDTO> getHomePosts(
@@ -38,6 +39,7 @@ public class PostController {
         return postService.getPostDTO(postId);
     }
 
+    // www.survivor-net.com/api/posts/
     @PostMapping("")
     public Map<String, String > addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,

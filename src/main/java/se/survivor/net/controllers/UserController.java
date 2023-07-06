@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.models.Post;
+import se.survivor.net.services.DbService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -14,9 +15,9 @@ import java.util.Map;
 @RestController
 public class UserController {
 
-    final private IDb dbService;
+    final private DbService dbService;
 
-    public UserController(IDb dbService) {
+    public UserController(DbService dbService) {
         this.dbService = dbService;
     }
 
