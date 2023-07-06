@@ -50,10 +50,12 @@ public class PostController {
         if(postInfo.containsKey(PARENT_ID)) {
             parentId = Long.parseLong(postInfo.get(PARENT_ID));
         }
-        postService.addPost(JWTUtility.getUsernameFromToken(jwtToken),
+        postService.addPost(
+                JWTUtility.getUsernameFromToken(jwtToken),
                 title,
                 caption,
-                parentId);
+                parentId
+        );
         return Map.of(SUCCESS, TRUE);
     }
 

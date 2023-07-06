@@ -50,4 +50,8 @@ public class PostService {
         dbService.addPost(username, title, caption, parentId);
         return true;
     }
+
+    public List<PostDTO> getUserPosts(Long userId, int chunk) {
+        return null;
+    }
 }

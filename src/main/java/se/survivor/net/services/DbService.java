@@ -337,7 +337,7 @@ public class DbService {
         return null; // TODO add chunk
     }
 
-    public boolean addPost(String username, String title, String caption, long parentId) {
+    public void addPost(String username, String title, String caption, long parentId) {
         Post parent = null;
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
@@ -345,9 +345,10 @@ public class DbService {
             parent = getPost(parentId, entityManager);
         }
         User user = getUserByUsername(username, entityManager);
-        Post post = new Post();
-
-
+        Post post = new Post(user, title, caption, parent);
+        entityManager.persist(post);
+        entityManager.getTransaction().commit();
+        entityManager.close();
     }
 
     public void addReaction(long userId, long postId, int reactionType) {

@@ -84,11 +84,11 @@ public class Post {
         return parent;
     }
 
-    public Set<Post> getChildren() {
+    public List<Post> getChildren() {
         return children;
     }
 
-    public Set<Picture> getPictures() {
+    public List<Picture> getPictures() {
         return pictures;
     }
 
