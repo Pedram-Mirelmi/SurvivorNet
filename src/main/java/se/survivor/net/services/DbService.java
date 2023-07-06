@@ -2,16 +2,19 @@ package se.survivor.net.services;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.Hibernate;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.DTO.PostDTO;
+import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
+import se.survivor.net.models.PostReaction;
 import se.survivor.net.models.User;
 
 import java.sql.Date;
@@ -336,5 +339,40 @@ public class DbService {
         Post post = new Post()
 
 
+    }
+
+    public void addReaction(long userId, long postId, int reactionType) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Post post = entityManager.find(Post.class, postId);
+        User user = entityManager.find(User.class, userId);
+        Hibernate.initialize(post.getReactions());
+        var resultList = entityManager.createQuery(
+                "SELECT pr FROM PostReaction pr " +
+                    " WHERE pr.user.userId=:userId AND pr.post.postId=:postId AND pr.reactionType=:reactoinType")
+                .setParameter("userId", userId)
+                .setParameter("postId", postId)
+                .setParameter("reactionType", reactionType)
+                .getResultList();
+        if(resultList.isEmpty()) {
+            post.getReactions().add(new PostReaction(user, reactionType, post));
+        }
+        else {
+            entityManager.remove(resultList.get(0));
+        }
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+    public List<PostReaction> getPostReactions(long postId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        Post post = entityManager.find(Post.class, postId);
+        var postReactions = post.getReactions();
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return postReactions;
     }
 }
