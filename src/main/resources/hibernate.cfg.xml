@@ -23,6 +23,11 @@
         <mapping class="se.survivor.net.models.User"/>
         <mapping class="se.survivor.net.models.Picture"/>
         <mapping class="se.survivor.net.models.Post"/>
+        <mapping class="se.survivor.net.models.PostReaction"/>
+        <mapping class="se.survivor.net.models.Comment"/>
+<!--        <mapping class="se.survivor.net.models.Solution"/>-->
+<!--        <mapping class="se.survivor.net.models.SolutionVote"/>-->
+
 
 
     </session-factory>

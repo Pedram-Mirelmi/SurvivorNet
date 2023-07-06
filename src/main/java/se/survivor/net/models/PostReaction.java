@@ -1,6 +1,6 @@
 package se.survivor.net.models;
 
-import com.google.gson.internal.LazilyParsedNumber;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -11,7 +11,7 @@ public class PostReaction {
     private long reactionId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
 
     /**
@@ -25,7 +25,7 @@ public class PostReaction {
     private int reactionType;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
+    @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;
 
     public PostReaction(User user, int reactionType, Post post) {
