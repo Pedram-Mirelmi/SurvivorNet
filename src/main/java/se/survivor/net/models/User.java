@@ -1,10 +1,9 @@
 package se.survivor.net.models;
 
 import jakarta.persistence.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -49,27 +48,27 @@ public class User {
     @JoinTable(name = "follows",
                 joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")},
                 inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followeeId")})
-    private Set<User> followings;
+    private List<User> followings;
 
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
             joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "followeeId")},
             inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")})
-    private Set<User> followers;
+    private List<User> followers;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
             joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")},
             inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockeeId")})
-    private Set<User> blockList;
+    private List<User> blockeeList;
 
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
             joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "blockeeId")},
             inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")})
-    private Set<User> blockedList;
+    private List<User> blockerList;
 
     public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
@@ -166,19 +165,19 @@ public class User {
         this.password = password;
     }
 
-    public Set<User> getFollowings() {
+    public List<User> getFollowings() {
         return followings;
     }
 
-    public Set<User> getFollowers() {
+    public List<User> getFollowers() {
         return followers;
     }
 
-    public Set<User> getBlockList() {
-        return blockList;
+    public List<User> getBlockeeList() {
+        return blockeeList;
     }
 
-    public Set<User> getBlockedList() {
-        return blockedList;
+    public List<User> getBlockerList() {
+        return blockerList;
     }
 }

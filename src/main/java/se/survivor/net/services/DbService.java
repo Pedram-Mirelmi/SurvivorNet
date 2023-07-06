@@ -104,7 +104,6 @@ public class DbService {
                 .setParameter("email", email)
                 .getResultList();
         if(resultList.isEmpty()) {
-
             throw new InvalidIdException("Invalid email");
         }
         return (User) resultList.get(0);
@@ -119,21 +118,21 @@ public class DbService {
         entityManager.close();
         return success;
     }
-    public List<UserDTO> getFollowers(Long userId) {
+    public List<User> getFollowers(Long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         User user = getUserById(userId, entityManager);
-        List<UserDTO> followers = user.getFollowers().stream().map(UserDTO::new).toList();
+        List<User> followers = user.getFollowers();
         entityManager.getTransaction().commit();
         entityManager.close();
         return followers;
     }
 
-    public List<UserDTO> getFollowings(Long userId) {
+    public List<User> getFollowings(Long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         User user = getUserById(userId, entityManager);
-        List<UserDTO> followings = user.getFollowings().stream().map(UserDTO::new).toList();
+        List<User> followings = user.getFollowings();
         entityManager.getTransaction().commit();
         entityManager.close();
         return followings;
@@ -141,6 +140,7 @@ public class DbService {
 
     public List<User> searchUsers(String query) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
         var resultList = entityManager.createQuery(
                 "SELECT u FROM User u " +
                         "WHERE u.username LIKE '%:query%' " +
@@ -148,102 +148,60 @@ public class DbService {
                         "OR u.email LIKE '%:query%'")
                 .setParameter("query", query)
                 .getResultList();
+        entityManager.getTransaction().commit();
         entityManager.close();
         return resultList;
     }
 
+    public void changeFollow(long followerId, long followeeId, boolean follow) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 
-    public boolean follow(String followerUsername, Long followeeId) {
+        User follower = entityManager.find(User.class, followerId);
+        User followee = entityManager.find(User.class, followeeId);
+
         try {
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            User follower = getUserByUsername(followerUsername, entityManager);
-            User followee = entityManager.find(User.class, followeeId);
-            if(followee == null) {
-                throw new InvalidIdException("Invalid User Id");
+            // one way is enough to store both ways!
+            if(follow) {
+                follower.getFollowings().add(followee);
             }
-            follower.getFollowings().add(followee);
-            followee.getFollowers().add(follower);
+            else {
+                follower.getFollowings().remove(followee);
+            }
             entityManager.getTransaction().commit();
             entityManager.close();
-            return true;
-        } catch (InvalidIdException e) {
-            throw e;
         }
         catch (Exception e) {
-            return false;
+            entityManager.getTransaction().rollback();
+            entityManager.close();
         }
     }
 
-    public boolean unfollow(String unfollowerUsername, Long unfolloweeId) {
+    public void changeBlock(long blockerId, Long blockeeId, boolean block) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        User blocker = entityManager.find(User.class, blockerId);
+        User blockee = entityManager.find(User.class, blockeeId);
+
         try {
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            User follower = getUserByUsername(unfollowerUsername, entityManager);
-            User followee = entityManager.find(User.class, unfolloweeId);
-            if(followee == null) {
-                throw new InvalidIdException("Invalid User Id");
+            // one way is enough to store both ways!
+            if(block) {
+                blocker.getBlockeeList().add(blockee);
             }
-            follower.getFollowings().remove(followee);
-            followee.getFollowers().remove(follower);
+            else {
+                blocker.getBlockeeList().remove(blockee);
+            }
             entityManager.getTransaction().commit();
             entityManager.close();
-            return true;
-        }
-        catch (InvalidIdException e) {
-            throw e;
         }
         catch (Exception e) {
-            return false;
+            entityManager.getTransaction().rollback();
+            entityManager.close();
+            throw e;
         }
     }
 
-    public boolean unblock(String unblockerUsername, Long unblockeeId) {
-        try {
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            User blocker = getUserByUsername(unblockerUsername, entityManager);
-            User blockee = entityManager.find(User.class, unblockeeId);
-            if(blockee == null) {
-                throw new InvalidIdException("Invalid User Id");
-            }
-            blocker.getBlockList().remove(blockee);
-            blockee.getBlockedList().remove(blocker);
-            entityManager.getTransaction().commit();
-            entityManager.close();
-            return true;
-      }
-        catch (InvalidIdException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean block(String blockerUsername, Long blockeeId) {
-        try {
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            User blocker = getUserByUsername(blockerUsername, entityManager);
-            User blockee = entityManager.find(User.class, blockeeId);
-            if(blockee == null) {
-                throw new InvalidIdException("Invalid User Id");
-            }
-            blocker.getBlockList().add(blockee);
-            blockee.getBlockedList().add(blocker);
-            entityManager.getTransaction().commit();
-            entityManager.close();
-            return true;
-        }
-        catch (InvalidIdException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            return false;
-        }
-
-    }
     ////////////////////////////////////////////////////////////////////////////////////////////////
     public void addPicture(long userId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
@@ -294,19 +252,7 @@ public class DbService {
         return 0;
     }
 
-    public void addFollow(long followerId, long followeeId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
 
-        User follower = entityManager.find(User.class, followerId);
-        User followee = entityManager.find(User.class, followeeId);
-
-        // one way is enough to store both ways!
-        follower.getFollowings().add(followee);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-    }
 
     public Post getPost(long postId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
