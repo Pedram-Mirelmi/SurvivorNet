@@ -10,6 +10,7 @@ import se.survivor.net.exceptions.InvalidRequestParamsException;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
 
+import se.survivor.net.services.DbService;
 import se.survivor.net.utils.JWTUtility;
 import se.survivor.net.utils.Secret;
 
@@ -30,9 +31,9 @@ import static se.survivor.net.utils.Constants.*;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-    final IDb db;
+    private final DbService db;
 
-    public AuthController(IDb db) {
+    public AuthController(DbService db) {
         this.db = db;
     }
 

@@ -5,10 +5,15 @@ import static se.survivor.net.utils.Constants.*;
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
+<<<<<<< HEAD
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.models.User;
 import se.survivor.net.services.PostService;
 import se.survivor.net.services.UserService;
+=======
+import se.survivor.net.services.DbService;
+import se.survivor.net.services.PostService;
+>>>>>>> develop
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -31,20 +36,26 @@ public class UserController {
         return userService.getUserDTOById(userId);
     }
 
-    @GetMapping("api/users/{userId}/posts")
-    public List<PostDTO> getUserProfile(@PathVariable(USER_ID) Long userId, @RequestHeader(AUTHORIZATION) String jwtToken) throws InvalidValueException {
-        User user = userService.getUserById(userId);
-        return postService.getUserPosts(user.getUsername(), 1);
+    @GetMapping("api/users/{userId}/profile")
+    public Map<String, Object> getUserProfile(
+        @RequestHeader(AUTHORIZATION) String jwtToken,
+        @PathVariable(USER_ID) Long userId,
+        @RequestParam int chunk) {
+        List<PostDTO> posts = postService.getUserPosts(userId, chunk);
+        return Map.of(USER_ID, userId,
+                POSTS, posts);
     }
 
     @GetMapping("api/users/{userId}/followers")
-    public List<UserDTO> getUserFollowers(@PathVariable(USER_ID) Long userId) {
-        return userService.getUserFollowersDTO(userId);
+    public Map<String, Object> getUserFollowers(@PathVariable(USER_ID) Long userId) {
+        return Map.of(USER_ID, userId,
+                FOLLOWERS, dbService.getFollowers(userId).stream().map(UserDTO::new));
     }
 
     @GetMapping("api/users/{userId}/followings")
-    public List<UserDTO> getUserFollowings(@PathVariable(USER_ID) Long userId) {
-        return userService.getUserFollowingsDTO(userId);
+    public Map<String, Object> getUserFollowings(@PathVariable(USER_ID) Long userId) {
+        return Map.of(USER_ID, userId,
+                FOLLOWINGS, dbService.getFollowings(userId).stream().map(UserDTO::new));
     }
 
     @PostMapping("api/users/follow/{userId}")

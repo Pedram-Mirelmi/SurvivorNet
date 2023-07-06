@@ -16,20 +16,15 @@ import java.util.Objects;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api/posts/")
+@RequestMapping("/api/posts/") // www.survivor-net.com/api/posts/******
 public class PostController {
 
-    private DbService dbService;
     private PostService postService;
-    private CommentService commentService;
 
-    PostController(DbService dbService,
-                   PostService postService,
-                   CommentService commentService) {
-        this.dbService = dbService;
+    PostController(PostService postService) {
         this.postService = postService;
-        this.commentService = commentService;
     }
+
 
     @GetMapping("home")
     public List<PostDTO> getHomePosts(
@@ -41,9 +36,10 @@ public class PostController {
     @GetMapping("{postId}")
     public PostDTO getPostDTO(
             @PathVariable(POST_ID) long postId) {
-        return postService.getPostDTOWithComments(postId);
+        return postService.getPostDTO(postId);
     }
 
+    // www.survivor-net.com/api/posts/
     @PostMapping("")
     public Map<String, String > addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,
@@ -54,10 +50,12 @@ public class PostController {
         if(postInfo.containsKey(PARENT_ID)) {
             parentId = Long.parseLong(postInfo.get(PARENT_ID));
         }
-        postService.addPost(JWTUtility.getUsernameFromToken(jwtToken),
+        postService.addPost(
+                JWTUtility.getUsernameFromToken(jwtToken),
                 title,
                 caption,
-                parentId);
+                parentId
+        );
         return Map.of(SUCCESS, TRUE);
     }
 
