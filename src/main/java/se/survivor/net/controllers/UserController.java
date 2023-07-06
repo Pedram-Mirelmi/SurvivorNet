@@ -5,15 +5,8 @@ import static se.survivor.net.utils.Constants.*;
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
-<<<<<<< HEAD
-import se.survivor.net.exceptions.InvalidValueException;
-import se.survivor.net.models.User;
 import se.survivor.net.services.PostService;
 import se.survivor.net.services.UserService;
-=======
-import se.survivor.net.services.DbService;
-import se.survivor.net.services.PostService;
->>>>>>> develop
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -49,13 +42,13 @@ public class UserController {
     @GetMapping("api/users/{userId}/followers")
     public Map<String, Object> getUserFollowers(@PathVariable(USER_ID) Long userId) {
         return Map.of(USER_ID, userId,
-                FOLLOWERS, dbService.getFollowers(userId).stream().map(UserDTO::new));
+                FOLLOWERS, userService.getUserFollowersDTO(userId));
     }
 
     @GetMapping("api/users/{userId}/followings")
     public Map<String, Object> getUserFollowings(@PathVariable(USER_ID) Long userId) {
         return Map.of(USER_ID, userId,
-                FOLLOWINGS, dbService.getFollowings(userId).stream().map(UserDTO::new));
+                FOLLOWINGS, userService.getUserFollowingsDTO(userId));
     }
 
     @PostMapping("api/users/follow/{userId}")

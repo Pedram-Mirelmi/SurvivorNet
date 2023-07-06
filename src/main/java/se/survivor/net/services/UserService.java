@@ -65,7 +65,7 @@ public class UserService {
     }
 
     public boolean removeBlock(String blockerUsername, Long blockeeId) {
-        r try {
+        try {
             User follower = dbService.getUserByUsername(blockerUsername);
             dbService.changeFollow(follower.getUserId(), blockeeId, false);
             return true;
