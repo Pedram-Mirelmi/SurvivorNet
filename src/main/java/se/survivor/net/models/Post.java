@@ -37,14 +37,14 @@ public class Post {
     private List<Post> children;
 
     @OneToMany(targetEntity = Picture.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "postId", referencedColumnName = "pictureId")
+    @JoinColumn(name = "postId", referencedColumnName = "postId")
     private List<Picture> pictures;
 
     @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private List<Comment> comments;
 
-    @OneToMany(targetEntity = PostReaction.class, fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private List<PostReaction> reactions;
 
