@@ -1,7 +1,5 @@
 package se.survivor.net.DTO;
 
-
-import org.hibernate.Hibernate;
 import se.survivor.net.models.PostReaction;
 
 public class PostReactionDTO {

@@ -14,13 +14,6 @@ public class PostReaction {
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
 
-    /**
-     * 1: like
-     * 2: dislike
-     * 3: sad
-     * 4: fire
-     * 5: hand clap
-     */
     @Column(nullable = false)
     private int reactionType;
 

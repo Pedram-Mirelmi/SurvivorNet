@@ -32,4 +32,5 @@ public class Constants {
     public static final String PARENT_ID = "parentID";
     public static final String TRUE = "true";
     public static final String REACTION_TYPE = "reactionType";
+    public static final String TEXT = "text";
 }
