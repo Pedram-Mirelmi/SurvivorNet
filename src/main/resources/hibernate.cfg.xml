@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="connection.url">jdbc:mysql://localhost:3306/SurvivorNet</property>
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="connection.username">root</property>
+        <property name="connection.password">root</property>
+
+        <property name="connection.pool_size">20</property>
+
+        <!--    SQL dialect-->
+        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+
+        <!--    Echo all executed sql to stdout -->
+        <property name="show_sql">true</property>
+
+        <!--    Names the annotated entity class-->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <mapping class="se.survivor.net.models.User"/>
+        <mapping class="se.survivor.net.models.Picture"/>
+        <mapping class="se.survivor.net.models.Post"/>
+        <mapping class="se.survivor.net.models.PostReaction"/>
+        <mapping class="se.survivor.net.models.Comment"/>
+
+
+
+    </session-factory>
+</hibernate-configuration>
