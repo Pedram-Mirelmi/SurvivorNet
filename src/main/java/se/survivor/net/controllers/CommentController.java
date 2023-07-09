@@ -4,12 +4,9 @@ package se.survivor.net.controllers;
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.exceptions.InvalidRequestParamsException;
-import se.survivor.net.models.Comment;
 import se.survivor.net.services.CommentService;
 import se.survivor.net.utils.JWTUtility;
 
-import javax.swing.text.html.Option;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +57,7 @@ public class CommentController {
         return commentService.getPostSolutions(postId, chunk.orElse(0));
     }
 
-    @PostMapping("/api/posts/{psotId}/solutions")
+    @PostMapping("/api/posts/{postId}/solutions")
     public CommentDTO addSolution(
             @PathVariable(POST_ID) long postId,
             @RequestHeader(AUTHORIZATION) String jwtToken,
@@ -76,8 +73,4 @@ public class CommentController {
                 postId,
                 solutionText);
     }
-
-
-
-
 }
