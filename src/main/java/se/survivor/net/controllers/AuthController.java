@@ -42,7 +42,6 @@ public class AuthController {
 
         String githubUserToken = getUserTokenFromGithub(code);
         JsonObject userInfo = getUserInfoFromGithub(githubUserToken);
-        var sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         String username = userInfo.get("login").getAsString();
         String email = userInfo.get("email").getAsString();
         try {
@@ -84,7 +83,7 @@ public class AuthController {
             String email = Objects.requireNonNull(body.get(EMAIL));
             Date birthDate = Date.valueOf(body.get(BIRTHDATE));
 
-            db.addUser(username, username, password, email, birthDate, "");
+            db.addUser(username, name, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
             return Map.of(STATUS, SUCCESS,
                     AUTHORIZATION, authToken);

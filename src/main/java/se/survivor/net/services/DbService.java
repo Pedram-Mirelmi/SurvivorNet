@@ -9,13 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.DTO.PostDTO;
-import se.survivor.net.DTO.PostReactionDTO;
-import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidIdException;
-import se.survivor.net.models.Picture;
-import se.survivor.net.models.Post;
-import se.survivor.net.models.PostReaction;
-import se.survivor.net.models.User;
+import se.survivor.net.models.*;
 
 import java.sql.Date;
 import java.text.ParseException;
@@ -279,8 +274,19 @@ public class DbService {
         return new PostDTO(post, getPostCommentCount(postId), getPostReactionCount(postId), post.getParent());
     }
 
-    public List<CommentDTO> getPostComments(long postId) {
-        return null; // TODO add chunk
+    public List<Comment> getPostComments(long postId, int chunk) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        var comments = entityManager.createQuery("SELECT c from Comment c " +
+                "WHERE c.post.postId=:postId AND c.isSolution=FALSE")
+                .setParameter("postId", postId)
+                .setFirstResult((chunk-1) * 10)
+                .setMaxResults((chunk) * 10)
+                .getResultList();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return comments;
     }
 
     public void addPost(String username, String title, String caption, long parentId) {
@@ -330,5 +336,95 @@ public class DbService {
         entityManager.getTransaction().commit();
         entityManager.close();
         return postReactions;
+    }
+
+    public long getCommentLikes(Long commentId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Long likes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
+                "FROM CommentLike cl " +
+                "WHERE cl.comment.commentId=:commentId AND cl.likes=TRUE")
+                .setParameter("commentId", commentId)
+                .getSingleResult();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return likes;
+    }
+
+    public long getCommentDislikes(Long commentId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Long dislikes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
+                "FROM CommentLike cl " +
+                "WHERE cl.comment.commentId=:commentId AND cl.likes=FALSE")
+                .setParameter("commentId", commentId)
+                .getSingleResult();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return dislikes;
+    }
+
+    public Comment addComment(long userId, long postId, String commentText, Long parentId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        User user = getUserById(userId, entityManager);
+        Post post = getPostById(postId, entityManager);
+        Comment comment;
+        Comment parent = null;
+        if(parentId != null) {
+            parent = getCommentById(parentId, entityManager);
+        }
+        comment = new Comment(user, post, commentText, Date.valueOf(LocalDate.now()), parent, false);
+        entityManager.persist(comment);
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return comment;
+    }
+
+    private Comment getCommentById(long commentId, EntityManager entityManager) {
+        Comment comment = entityManager.find(Comment.class, commentId);
+        if(comment == null) {
+            throw new InvalidIdException("Invalid comment id");
+        }
+        return comment;
+    }
+
+    private Post getPostById(long postId, EntityManager entityManager) {
+        Post post = entityManager.find(Post.class, postId);
+        if(post == null) {
+            throw new InvalidIdException("Invalid post Id");
+        }
+        return post;
+    }
+
+    public List<Comment> getPostSolutions(long postId, int chunk) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        var solutions = entityManager.createQuery("SELECT c from Comment c " +
+                "WHERE c.post.postId=:postId AND c.isSolution=TRUE")
+                .setParameter("postId", postId)
+                .setFirstResult((chunk-1) * 10)
+                .setMaxResults((chunk) * 10)
+                .getResultList();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return solutions;
+    }
+
+    public Comment addSolution(long userId, long postId, String solutionText) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        User user = getUserById(userId, entityManager);
+        Post post = getPostById(postId, entityManager);
+        Comment comment = new Comment(user, post, solutionText, Date.valueOf(LocalDate.now()), null, true);
+        entityManager.persist(comment);
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return comment;
     }
 }
