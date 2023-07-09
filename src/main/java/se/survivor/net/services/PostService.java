@@ -2,6 +2,7 @@ package se.survivor.net.services;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.PostDTO;
+import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
@@ -53,5 +54,16 @@ public class PostService {
 
     public List<PostDTO> getUserPosts(Long userId, int chunk) {
         return null;
+    }
+
+    public void addReaction(String username, long postId, int reactionType) {
+        User user = dbService.getUserByUsername(username);
+        dbService.addReaction(user.getUserId(), postId, reactionType);
+    }
+
+    public List<PostReactionDTO> getReactions(long postId) {
+        return dbService.getPostReactions(postId).
+                stream().
+                map(PostReactionDTO::new).toList();
     }
 }

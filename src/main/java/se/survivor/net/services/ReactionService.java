@@ -15,14 +15,5 @@ public class ReactionService {
         this.dbService = dbService;
     }
 
-    public void addReaction(String username, long postId, int reactionType) {
-        User user = dbService.getUserByUsername(username);
-        dbService.addReaction(user.getUserId(), postId, reactionType);
-    }
 
-    public List<PostReactionDTO> getReactions(long postId) {
-        return dbService.getPostReactions(postId).
-                stream().
-                map(PostReactionDTO::new).toList();
-    }
 }

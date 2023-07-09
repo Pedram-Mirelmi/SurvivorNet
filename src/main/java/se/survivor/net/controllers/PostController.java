@@ -3,10 +3,12 @@ package se.survivor.net.controllers;
 
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
+import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.services.CommentService;
 import se.survivor.net.services.DbService;
 import se.survivor.net.services.PostService;
+import se.survivor.net.services.ReactionService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -57,6 +59,25 @@ public class PostController {
                 parentId
         );
         return Map.of(SUCCESS, TRUE);
+    }
+
+
+    @PostMapping("/posts/{postId}/reactions")
+    public Map<String, Object> addReaction(
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(POST_ID) long postId,
+            @RequestParam(REACTION_TYPE) int reactionType) {
+        String username = JWTUtility.getUsernameFromToken(jwtToken);
+        postService.addReaction(username, postId, reactionType);
+        return Map.of(
+                STATUS, SUCCESS
+        );
+    }
+
+    @GetMapping("/posts/{postId}/reactions")
+    public List<PostReactionDTO> getPostReactions(
+            @PathVariable(POST_ID) long postId) {
+        return postService.getReactions(postId);
     }
 
 }
