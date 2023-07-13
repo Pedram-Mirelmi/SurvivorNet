@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "posts", schema = "public")
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long postId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)

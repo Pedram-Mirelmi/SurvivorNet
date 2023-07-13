@@ -5,10 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
-import se.survivor.net.services.CommentService;
-import se.survivor.net.services.DbService;
 import se.survivor.net.services.PostService;
-import se.survivor.net.services.ReactionService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;

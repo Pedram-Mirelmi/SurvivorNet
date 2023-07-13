@@ -35,8 +35,8 @@ public class UserDTO {
         this.birthDate = user.getBirthDate();
         this.joinedAt = user.getJoinedAt();
         this.bio = user.getBio();
-        this.profilePicId = user.getProfilePic().getPictureId();
-        this.backgroundPicId = user.getBackgroundPic().getPictureId();
+        this.profilePicId = user.getProfilePic() == null ? 0 : user.getProfilePic().getPictureId();
+        this.backgroundPicId = user.getBackgroundPic() == null ? 0 : user.getBackgroundPic().getPictureId();
     }
 
     public long getUserId() {

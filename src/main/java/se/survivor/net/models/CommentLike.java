@@ -4,7 +4,7 @@ package se.survivor.net.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "commentLikes")
+@Table(name = "commentLikes", schema = "public")
 public class CommentLike {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,16 +16,16 @@ public class CommentLike {
     @ManyToOne(targetEntity = Comment.class, fetch = FetchType.LAZY)
     private Comment comment;
 
-    private boolean likes;
-
+    @Column(nullable = false)
+    private boolean isLike;
 
     public CommentLike() {
     }
 
-    public CommentLike(User user, Comment comment, boolean likes) {
+    public CommentLike(User user, Comment comment, boolean isLike) {
         this.user = user;
         this.comment = comment;
-        this.likes = likes;
+        this.isLike = isLike;
     }
 
     public User getUser() {
@@ -36,7 +36,7 @@ public class CommentLike {
         return comment;
     }
 
-    public boolean isLikes() {
-        return likes;
+    public boolean isIsLike() {
+        return isLike;
     }
 }

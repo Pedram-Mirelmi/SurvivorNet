@@ -7,7 +7,6 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.models.*;
@@ -37,7 +36,8 @@ public class DbService {
                         @NotNull String bio) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        entityManager.persist(new User(username, password, name, email, birthDate, Date.valueOf(LocalDate.now()), "", null, null));
+        User user = new User(username, password, name, email, birthDate, Date.valueOf(LocalDate.now()), "", null, null);
+        entityManager.persist(user);
         entityManager.getTransaction().commit();
         entityManager.close();
     }
@@ -117,6 +117,7 @@ public class DbService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         User user = getUserById(userId, entityManager);
+        Hibernate.initialize(user.getFollowers());
         List<User> followers = user.getFollowers();
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -127,6 +128,7 @@ public class DbService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         User user = getUserById(userId, entityManager);
+        Hibernate.initialize(user.getFollowings());
         List<User> followings = user.getFollowings();
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -249,16 +251,16 @@ public class DbService {
 
 
 
-    public Post getPost(long postId) {
+    public Post getPostById(long postId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        Post post = getPost(postId, entityManager);
+        Post post = getPostById(postId, entityManager);
         entityManager.getTransaction().commit();
         entityManager.close();
         return post;
     }
 
-    private Post getPost(long postId, EntityManager entityManager) {
+    private Post getPostById(long postId, EntityManager entityManager) {
         Post post = entityManager.find(Post.class, postId);
         if(post == null) {
             entityManager.getTransaction().rollback();
@@ -270,7 +272,7 @@ public class DbService {
 
     public PostDTO getPostDTO(long postId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-        Post post = getPost(postId);
+        Post post = getPostById(postId);
         return new PostDTO(post, getPostCommentCount(postId), getPostReactionCount(postId), post.getParent());
     }
 
@@ -289,18 +291,19 @@ public class DbService {
         return comments;
     }
 
-    public void addPost(String username, String title, String caption, long parentId) {
+    public Post addPost(String username, String title, String caption, long parentId) {
         Post parent = null;
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         if(parentId != -1) {
-            parent = getPost(parentId, entityManager);
+            parent = getPostById(parentId, entityManager);
         }
         User user = getUserByUsername(username, entityManager);
         Post post = new Post(user, title, caption, parent);
         entityManager.persist(post);
         entityManager.getTransaction().commit();
         entityManager.close();
+        return post;
     }
 
     public void addReaction(long userId, long postId, int reactionType) {
@@ -344,7 +347,7 @@ public class DbService {
 
         Long likes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
                 "FROM CommentLike cl " +
-                "WHERE cl.comment.commentId=:commentId AND cl.likes=TRUE")
+                "WHERE cl.comment.commentId=:commentId AND cl.isLike=TRUE")
                 .setParameter("commentId", commentId)
                 .getSingleResult();
 
@@ -359,7 +362,7 @@ public class DbService {
 
         Long dislikes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
                 "FROM CommentLike cl " +
-                "WHERE cl.comment.commentId=:commentId AND cl.likes=FALSE")
+                "WHERE cl.comment.commentId=:commentId AND cl.isLike=FALSE")
                 .setParameter("commentId", commentId)
                 .getSingleResult();
 
@@ -393,14 +396,6 @@ public class DbService {
         return comment;
     }
 
-    private Post getPostById(long postId, EntityManager entityManager) {
-        Post post = entityManager.find(Post.class, postId);
-        if(post == null) {
-            throw new InvalidIdException("Invalid post Id");
-        }
-        return post;
-    }
-
     public List<Comment> getPostSolutions(long postId, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
@@ -426,5 +421,23 @@ public class DbService {
         entityManager.getTransaction().commit();
         entityManager.close();
         return comment;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////for tests///////////////////////////////////////
+
+
+    public void removeUser(long userId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        User user = entityManager.find(User.class, userId);
+        if(user != null) {
+            entityManager.remove(user);
+        }
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
     }
 }

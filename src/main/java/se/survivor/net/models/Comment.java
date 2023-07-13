@@ -5,10 +5,10 @@ import jakarta.persistence.*;
 import java.sql.Date;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "comments", schema = "public")
 public class Comment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long commentId;
 
     @Column(nullable = false)

@@ -15,20 +15,34 @@ public class UserService {
         this.dbService = dbService;
     }
 
-    public User getUserById(Long userId) {
-        return dbService.getUserById(userId);
+    public UserDTO getUserById(Long userId) {
+        return new UserDTO(dbService.getUserById(userId));
     }
 
     public UserDTO getUserDTOById(Long userId) {
         return new UserDTO(dbService.getUserById(userId));
     }
 
+    public UserDTO getUserDTOByUsername(String username) {
+        return new UserDTO(dbService.getUserByUsername(username));
+    }
+
+    public UserDTO getUserDTOByEmail(String email) {
+        return new UserDTO(dbService.getUserByEmail(email));
+    }
+
     public List<UserDTO> getUserFollowersDTO(Long userId) {
-        return dbService.getFollowers(userId).stream().map(UserDTO::new).toList();
+        return dbService.getFollowers(userId)
+                .stream()
+                .map(UserDTO::new)
+                .toList();
     }
 
     public List<UserDTO> getUserFollowingsDTO(Long userId) {
-        return dbService.getFollowings(userId).stream().map(UserDTO::new).toList();
+        return dbService.getFollowings(userId)
+                .stream()
+                .map(UserDTO::new)
+                .toList();
     }
 
     public boolean addFollow(String followerUsername, Long followeeId) {

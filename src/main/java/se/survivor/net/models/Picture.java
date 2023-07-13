@@ -3,11 +3,11 @@ package se.survivor.net.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "pictures")
+@Table(name = "pictures", schema = "public")
 public class Picture {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long pictureId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)

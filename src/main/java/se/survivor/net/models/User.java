@@ -6,11 +6,11 @@ import java.sql.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -32,7 +32,7 @@ public class User {
     @Column(nullable = false)
     private String bio;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "profilePicId", referencedColumnName = "pictureId")
     private Picture profilePic;
 

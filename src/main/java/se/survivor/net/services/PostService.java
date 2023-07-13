@@ -34,25 +34,16 @@ public class PostService {
         ).toList();
     }
 
-    public List<PostDTO> getUserPostsDTO(String username, int chunk) throws InvalidValueException {
-        if(chunk < 1) {
-            throw new InvalidValueException("Invalid negative chunk value");
-        }
-        User user = dbService.getUserByUsername(username);
-        return dbService.getUserPostsDTO(user.getUserId(), chunk);
-    }
-
     public PostDTO getPostDTO(long postId) {
         return dbService.getPostDTO(postId);
     }
 
 
-    public boolean addPost(String username, String title, String caption, long parentId) {
-        dbService.addPost(username, title, caption, parentId);
-        return true;
+    public PostDTO addPost(String username, String title, String caption, long parentId) {
+        return new PostDTO(dbService.addPost(username, title, caption, parentId), 0, 0, dbService.getPostById(parentId));
     }
 
-    public List<PostDTO> getUserPosts(Long userId, int chunk) {
+    public List<PostDTO>getUserPosts(Long userId, int chunk) {
         return null;
     }
 
