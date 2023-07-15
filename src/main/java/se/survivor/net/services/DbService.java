@@ -192,10 +192,10 @@ public class DbService {
         try {
             // one way is enough to store both ways!
             if(block) {
-                blockerUser.getBlockeeList().add(blockeeUser);
+                blockerUser.getBlockList().add(blockeeUser);
             }
             else {
-                blockerUser.getBlockeeList().remove(blockeeUser);
+                blockerUser.getBlockList().remove(blockeeUser);
             }
             entityManager.getTransaction().commit();
             entityManager.close();
@@ -208,17 +208,59 @@ public class DbService {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    public void addPicture(String username) {
+    public Picture addPictureForProfile(String username) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
         User user = getUserByUsername(username, entityManager);
-        Picture picture = new Picture(user);
+        if(user.getProfilePic() != null) {
+            entityManager.remove(user.getProfilePic());
+        }
+
+        Picture picture = new Picture(user, null);
+        user.setProfilePic(picture);
 
         entityManager.persist(picture);
 
         entityManager.getTransaction().commit();
         entityManager.close();
+
+        return picture;
+    }
+
+    public Picture addBackgroundPictureForProfile(String username) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        User user = getUserByUsername(username, entityManager);
+        if(user.getBackgroundPic() != null) {
+            entityManager.remove(user.getBackgroundPic());
+        }
+
+        Picture picture = new Picture(user, null);
+        user.setBackgroundPic(picture);
+
+        entityManager.persist(picture);
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        return picture;
+    }
+
+    public Picture addPicturePost(long postId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Post post = getPostById(postId);
+        User user = post.getUser();
+        Picture picture = new Picture(user, post);
+        post.getPictures().add(picture);
+        entityManager.persist(picture);
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+        return picture;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -485,14 +527,28 @@ public class DbService {
         entityManager.getTransaction().begin();
 
         User user = getUserByUsername(username, entityManager);
+        user.getPictures().clear();
+        user.setProfilePic(null);
+        user.setBackgroundPic(null);
 
-        entityManager.createQuery("DELETE FROM Post p WHERE p.user.userId=:userId")
+        entityManager.createQuery("DELETE FROM Picture p WHERE p.owner.userId=:userId")
+                .setParameter("userId", user.getUserId())
+                .executeUpdate();
+
+
+        entityManager.createQuery("DELETE FROM Comment c WHERE c.user.userId=:userId")
                 .setParameter(USER_ID, user.getUserId())
                 .executeUpdate();
 
         entityManager.createQuery("DELETE FROM PostReaction pr WHERE pr.user.userId=:userId")
                 .setParameter(USER_ID, user.getUserId())
                 .executeUpdate();
+
+        entityManager.createQuery("DELETE FROM Post p WHERE p.user.userId=:userId")
+                .setParameter(USER_ID, user.getUserId())
+                .executeUpdate();
+
+
 //        entityManager.createQuery(
 //                "DELETE FROM PostReaction pr" +
 //            " WHERE pr.id IN (SELECT ")
@@ -502,4 +558,6 @@ public class DbService {
         entityManager.getTransaction().commit();
         entityManager.close();
     }
+
+
 }

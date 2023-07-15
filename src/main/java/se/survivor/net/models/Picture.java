@@ -14,11 +14,16 @@ public class Picture {
     @JoinColumn(name = "ownerId", referencedColumnName = "userId")
     private User owner;
 
+    @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
+    @JoinColumn(nullable = true, name = "postId", referencedColumnName = "postId")
+    private Post post;
+
     public Picture() {
     }
 
-    public Picture(User owner) {
+    public Picture(User owner, Post post) {
         this.owner = owner;
+        this.post = post;
     }
 
     public Long getPictureId() {

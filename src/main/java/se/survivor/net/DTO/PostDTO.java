@@ -1,9 +1,11 @@
 package se.survivor.net.DTO;
 
+import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostDTO {
     private long postId;
@@ -18,6 +20,8 @@ public class PostDTO {
 
     private LocalDateTime createdAt;
 
+    private List<Long> pictures;
+
     public PostDTO(Post post, long commentCount, long reactionCount, long parentId) {
         this.postId = post.getPostId();
         this.user = new UserDTO(post.getUser());
@@ -25,6 +29,7 @@ public class PostDTO {
         this.caption = post.getCaption();
         this.parentId = parentId;
         this.createdAt = post.getCreatedAt();
+        this.pictures = post.getPictures() == null ? null : post.getPictures().stream().map(Picture::getPictureId).toList();
     }
 
     public long getPostId() {
@@ -49,5 +54,9 @@ public class PostDTO {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<Long> getPictures() {
+        return pictures;
     }
 }

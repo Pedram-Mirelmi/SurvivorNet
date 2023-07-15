@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
+import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 
@@ -67,5 +68,9 @@ public class PostService {
         return dbService.getPostReactions(postId).
                 stream().
                 map(PostReactionDTO::new).toList();
+    }
+
+    public Picture addPictureToPost(long postId) {
+        return dbService.addPicturePost(postId);
     }
 }

@@ -2,6 +2,7 @@ package se.survivor.net.services;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.models.Picture;
 import se.survivor.net.models.User;
 
 import java.util.List;
@@ -87,5 +88,13 @@ public class UserService {
 
     public List<UserDTO> searchUsers(String query) {
         return dbService.searchUsers(query).stream().map(UserDTO::new).toList();
+    }
+
+    public Picture addProfilePicture(String username) {
+        return dbService.addPictureForProfile(username);
+    }
+
+    public Picture addBackgroundProfilePicture(String username) {
+        return dbService.addBackgroundPictureForProfile(username);
     }
 }

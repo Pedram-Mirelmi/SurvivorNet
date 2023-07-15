@@ -121,7 +121,6 @@ public class PostControllerTests {
     {
         postService.addReaction("Pedram", 3L, 2);
         postService.addReaction("Pedram", 3L, 1);
-
     }
 
     @Test
