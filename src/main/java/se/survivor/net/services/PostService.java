@@ -20,17 +20,16 @@ public class PostService {
     }
 
     public List<PostDTO> getHomePosts(String username, int chunk) throws InvalidValueException {
-        if (chunk < 1) {
+        if (chunk < 0) {
             throw new InvalidValueException("Invalid negative chunk value");
         }
-        User user = dbService.getUserByUsername(username);
-        List<Post> posts = dbService.getUserHomePosts(user.getUserId(), chunk);
+        List<Post> posts = dbService.getUserHomePosts(username, chunk);
         return posts.stream().map(
                 p -> new PostDTO(
                         p,
                         dbService.getPostCommentCount(p.getPostId()),
                         dbService.getPostReactionCount(p.getPostId()),
-                        null)
+                        p.getParent() == null ? -1 : p.getParent().getPostId())
         ).toList();
     }
 
@@ -40,16 +39,28 @@ public class PostService {
 
 
     public PostDTO addPost(String username, String title, String caption, long parentId) {
-        return new PostDTO(dbService.addPost(username, title, caption, parentId), 0, 0, dbService.getPostById(parentId));
+        Post post = dbService.addPost(username, title, caption, parentId);
+        return new PostDTO(post,
+                0,
+                0,
+                post.getParent() == null ? -1 : post.getParent().getPostId());
     }
 
-    public List<PostDTO>getUserPosts(Long userId, int chunk) {
-        return null;
+    public List<PostDTO> getUserPosts(String username, int chunk) throws InvalidValueException {
+        if (chunk < 0) {
+            throw new InvalidValueException("Invalid negative chunk value");
+        }
+        return dbService.getUserPosts(username, chunk)
+                .stream()
+                .map(p -> new PostDTO(p,
+                        dbService.getPostCommentCount(p.getPostId()),
+                        dbService.getPostReactionCount(p.getPostId()),
+                        p.getParent() == null ? -1 : p.getParent().getPostId()
+                )).toList();
     }
 
     public void addReaction(String username, long postId, int reactionType) {
-        User user = dbService.getUserByUsername(username);
-        dbService.addReaction(user.getUserId(), postId, reactionType);
+        dbService.addReaction(username, postId, reactionType);
     }
 
     public List<PostReactionDTO> getReactions(long postId) {

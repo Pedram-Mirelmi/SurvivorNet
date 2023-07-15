@@ -18,7 +18,7 @@
         <property name="show_sql">true</property>
 
         <!-- Update database on startup -->
-        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="hibernate.hbm2ddl.auto">create-drop</property>
 
         <mapping class="se.survivor.net.models.User"/>
         <mapping class="se.survivor.net.models.Picture"/>

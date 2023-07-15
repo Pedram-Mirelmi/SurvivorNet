@@ -40,7 +40,7 @@ public class PostController {
 
     // www.survivor-net.com/api/posts/
     @PostMapping("")
-    public Map<String, String > addPost(
+    public Map<String, String> addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @RequestBody Map<String, String> postInfo) {
         String title = Objects.requireNonNull(postInfo.get(TITLE));

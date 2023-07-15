@@ -14,7 +14,10 @@ import se.survivor.net.models.*;
 import java.sql.Date;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static se.survivor.net.utils.Constants.*;
 
 @Service
 public class DbService {
@@ -28,7 +31,7 @@ public class DbService {
         entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
 
-    public void addUser(@NotNull String username,
+    public User addUser(@NotNull String username,
                         @NotNull String name,
                         @NotNull String password,
                         @NotNull String email,
@@ -40,6 +43,7 @@ public class DbService {
         entityManager.persist(user);
         entityManager.getTransaction().commit();
         entityManager.close();
+        return user;
     }
 
 
@@ -74,7 +78,9 @@ public class DbService {
     }
 
     public User getUserByUsername(String username, EntityManager entityManager) {
-        var resultList = entityManager.createQuery("SELECT u FROM User u WHERE u.username=:username")
+        var resultList = entityManager.createQuery(
+                    "SELECT u FROM User u " +
+                    "WHERE u.username=:username", User.class)
                 .setParameter("username", username)
                 .getResultList();
         if(resultList.isEmpty()) {
@@ -82,7 +88,7 @@ public class DbService {
             entityManager.close();
             throw new InvalidIdException("Invalid Username");
         }
-        return (User) resultList.get(0);
+        return resultList.get(0);
     }
 
     public User getUserByEmail(String email) {
@@ -95,13 +101,15 @@ public class DbService {
     }
 
     public User getUserByEmail(String email, EntityManager entityManager) {
-        var resultList = entityManager.createQuery("SELECT u FROM User u WHERE u.email=:email")
+        List<User> resultList = entityManager.createQuery(
+                    "SELECT u FROM User u " +
+                    "WHERE u.email=:email", User.class)
                 .setParameter("email", email)
                 .getResultList();
         if(resultList.isEmpty()) {
             throw new InvalidIdException("Invalid email");
         }
-        return (User) resultList.get(0);
+        return resultList.get(0);
     }
 
     public boolean authenticate(String username, String password) {
@@ -113,10 +121,10 @@ public class DbService {
         entityManager.close();
         return success;
     }
-    public List<User> getFollowers(Long userId) {
+    public List<User> getFollowers(String username) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserById(userId, entityManager);
+        User user = getUserByUsername(username, entityManager);
         Hibernate.initialize(user.getFollowers());
         List<User> followers = user.getFollowers();
         entityManager.getTransaction().commit();
@@ -124,10 +132,10 @@ public class DbService {
         return followers;
     }
 
-    public List<User> getFollowings(Long userId) {
+    public List<User> getFollowings(String username) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserById(userId, entityManager);
+        User user = getUserByUsername(username, entityManager);
         Hibernate.initialize(user.getFollowings());
         List<User> followings = user.getFollowings();
         entityManager.getTransaction().commit();
@@ -138,11 +146,11 @@ public class DbService {
     public List<User> searchUsers(String query) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        var resultList = entityManager.createQuery(
+        List<User> resultList = entityManager.createQuery(
                 "SELECT u FROM User u " +
                         "WHERE u.username LIKE '%:query%' " +
                         "OR u.name LIKE '%:query%' " +
-                        "OR u.email LIKE '%:query%'")
+                        "OR u.email LIKE '%:query%'", User.class)
                 .setParameter("query", query)
                 .getResultList();
         entityManager.getTransaction().commit();
@@ -150,20 +158,20 @@ public class DbService {
         return resultList;
     }
 
-    public void changeFollow(long followerId, long followeeId, boolean follow) {
+    public void changeFollow(String follower, String followee, boolean follow) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        User follower = entityManager.find(User.class, followerId);
-        User followee = entityManager.find(User.class, followeeId);
+        User followerUser = getUserByUsername(follower, entityManager);
+        User followeeUser = getUserByUsername(followee, entityManager);
 
         try {
             // one way is enough to store both ways!
             if(follow) {
-                follower.getFollowings().add(followee);
+                followerUser.getFollowings().add(followeeUser);
             }
             else {
-                follower.getFollowings().remove(followee);
+                followerUser.getFollowings().remove(followeeUser);
             }
             entityManager.getTransaction().commit();
             entityManager.close();
@@ -174,20 +182,20 @@ public class DbService {
         }
     }
 
-    public void changeBlock(long blockerId, Long blockeeId, boolean block) {
+    public void changeBlock(String blocker, String blockee, boolean block) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        User blocker = entityManager.find(User.class, blockerId);
-        User blockee = entityManager.find(User.class, blockeeId);
+        User blockerUser = getUserByUsername(blocker, entityManager);
+        User blockeeUser = getUserByUsername(blockee, entityManager);
 
         try {
             // one way is enough to store both ways!
             if(block) {
-                blocker.getBlockeeList().add(blockee);
+                blockerUser.getBlockeeList().add(blockeeUser);
             }
             else {
-                blocker.getBlockeeList().remove(blockee);
+                blockerUser.getBlockeeList().remove(blockeeUser);
             }
             entityManager.getTransaction().commit();
             entityManager.close();
@@ -200,15 +208,11 @@ public class DbService {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    public void addPicture(long userId) {
+    public void addPicture(String username) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        User user = entityManager.find(User.class, userId);
-        if(user == null) {
-            throw new InvalidIdException("Invalid user id");
-        }
-
+        User user = getUserByUsername(username, entityManager);
         Picture picture = new Picture(user);
 
         entityManager.persist(picture);
@@ -219,34 +223,81 @@ public class DbService {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public List<PostDTO> getUserPostsDTO(Long userId, int chunk) {
+    public List<Post> getUserPosts(String username, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        List<Post> resultList = entityManager.createQuery("SELECT p FROM Post p WHERE p.user.userId=:userId")
-                .setParameter("userId", userId)
+        List<Post> resultList = entityManager.createQuery(
+                    "SELECT p FROM Post p " +
+                    "WHERE p.user.username=:username", Post.class)
+                .setParameter(USERNAME, username)
                 .getResultList();
+
+        resultList.forEach(Hibernate::initialize);
+
+        entityManager.getTransaction().commit();
         entityManager.close();
 
-        return resultList.stream().map(
-                p -> new PostDTO(p, p.getComments().size(), p.getReactions().size(), p.getParent()
-                )
-        ).toList();
+        return resultList;
     }
 
 
+    public List<Post> getUserHomePosts(String username, int chunk) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
 
+        List<Post> resultList = entityManager.createQuery(
+                    "SELECT p FROM Post p " +
+                    "WHERE p.user IN " +
+                    "       (SELECT u.followings from User u  " +
+                    "       WHERE u.username=:username)" +
+                    "ORDER BY p.createdAt DESC ", Post.class)
+                .setParameter(USERNAME, username)
+                .setFirstResult(chunk)
+                .setMaxResults((chunk+1)*10)
+                .getResultList();
 
+        resultList.forEach(p -> Hibernate.initialize(p.getParent()));
 
-    public List<Post> getUserHomePosts(long userId, int chunk) {
-        return null;
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        return resultList;
+
     }
 
     public long getPostCommentCount(long postId) {
-        return 0;
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        long count = entityManager.createQuery(
+                    "SELECT COUNT(*) " +
+                    "FROM Comment c " +
+                    "WHERE c.post.postId = :postId", Long.class)
+                .setParameter("postId", postId)
+                .getSingleResult();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        return count;
+
     }
 
     public long getPostReactionCount(long postId) {
-        return 0;
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        long count = entityManager.createQuery(
+                "SELECT COUNT(*) " +
+                        "FROM PostReaction pr " +
+                        "WHERE pr.post.postId = :postId", Long.class)
+                .setParameter("postId", postId)
+                .getSingleResult();
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        return count;
     }
 
 
@@ -273,7 +324,10 @@ public class DbService {
     public PostDTO getPostDTO(long postId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         Post post = getPostById(postId);
-        return new PostDTO(post, getPostCommentCount(postId), getPostReactionCount(postId), post.getParent());
+        return new PostDTO(post,
+                getPostCommentCount(postId),
+                getPostReactionCount(postId),
+                post.getParent() == null ? -1 : post.getParent().getPostId());
     }
 
     public List<Comment> getPostComments(long postId, int chunk) {
@@ -282,8 +336,8 @@ public class DbService {
         var comments = entityManager.createQuery("SELECT c from Comment c " +
                 "WHERE c.post.postId=:postId AND c.isSolution=FALSE")
                 .setParameter("postId", postId)
-                .setFirstResult((chunk-1) * 10)
-                .setMaxResults((chunk) * 10)
+                .setFirstResult((chunk) * 10)
+                .setMaxResults((chunk+1) * 10)
                 .getResultList();
 
         entityManager.getTransaction().commit();
@@ -299,33 +353,30 @@ public class DbService {
             parent = getPostById(parentId, entityManager);
         }
         User user = getUserByUsername(username, entityManager);
-        Post post = new Post(user, title, caption, parent);
+        Post post = new Post(user, title, caption, LocalDateTime.now(), parent);
         entityManager.persist(post);
         entityManager.getTransaction().commit();
         entityManager.close();
         return post;
     }
 
-    public void addReaction(long userId, long postId, int reactionType) {
+    public void addReaction(String username, long postId, int reactionType) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
         Post post = entityManager.find(Post.class, postId);
-        User user = entityManager.find(User.class, userId);
+        User user = getUserByUsername(username, entityManager);
         Hibernate.initialize(post.getReactions());
         var resultList = entityManager.createQuery(
                 "SELECT pr FROM PostReaction pr " +
-                    " WHERE pr.user.userId=:userId AND pr.post.postId=:postId AND pr.reactionType=:reactoinType")
-                .setParameter("userId", userId)
+                    " WHERE pr.user.username=:username AND pr.post.postId=:postId")
+                .setParameter(USERNAME, username)
                 .setParameter("postId", postId)
-                .setParameter("reactionType", reactionType)
                 .getResultList();
-        if(resultList.isEmpty()) {
-            post.getReactions().add(new PostReaction(user, reactionType, post));
-        }
-        else {
+        if(!resultList.isEmpty()) {
             entityManager.remove(resultList.get(0));
         }
+        entityManager.persist(new PostReaction(user, reactionType, post));
 
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -336,6 +387,7 @@ public class DbService {
         entityManager.getTransaction().begin();
         Post post = entityManager.find(Post.class, postId);
         var postReactions = post.getReactions();
+        postReactions.forEach(pr -> Hibernate.initialize(pr.getUser()));
         entityManager.getTransaction().commit();
         entityManager.close();
         return postReactions;
@@ -371,10 +423,10 @@ public class DbService {
         return dislikes;
     }
 
-    public Comment addComment(long userId, long postId, String commentText, Long parentId) {
+    public Comment addComment(String username, long postId, String commentText, Long parentId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserById(userId, entityManager);
+        User user = getUserByUsername(username, entityManager);
         Post post = getPostById(postId, entityManager);
         Comment comment;
         Comment parent = null;
@@ -411,10 +463,10 @@ public class DbService {
         return solutions;
     }
 
-    public Comment addSolution(long userId, long postId, String solutionText) {
+    public Comment addSolution(String username, long postId, String solutionText) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserById(userId, entityManager);
+        User user = getUserByUsername(username, entityManager);
         Post post = getPostById(postId, entityManager);
         Comment comment = new Comment(user, post, solutionText, Date.valueOf(LocalDate.now()), null, true);
         entityManager.persist(comment);
@@ -428,14 +480,24 @@ public class DbService {
     //////////////////////////////////for tests///////////////////////////////////////
 
 
-    public void removeUser(long userId) {
+    public void removeUser(String username) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        User user = entityManager.find(User.class, userId);
-        if(user != null) {
-            entityManager.remove(user);
-        }
+        User user = getUserByUsername(username, entityManager);
+
+        entityManager.createQuery("DELETE FROM Post p WHERE p.user.userId=:userId")
+                .setParameter(USER_ID, user.getUserId())
+                .executeUpdate();
+
+        entityManager.createQuery("DELETE FROM PostReaction pr WHERE pr.user.userId=:userId")
+                .setParameter(USER_ID, user.getUserId())
+                .executeUpdate();
+//        entityManager.createQuery(
+//                "DELETE FROM PostReaction pr" +
+//            " WHERE pr.id IN (SELECT ")
+
+        entityManager.remove(user);
 
         entityManager.getTransaction().commit();
         entityManager.close();

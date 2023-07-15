@@ -35,8 +35,8 @@ class UserControllerTests {
     @AfterAll
     void tearDown() throws ParseException {
         System.out.println("tearing down! =======================================================================================");
-        dbService.removeUser(1);
-        dbService.removeUser(2);
+        dbService.removeUser("Pedram");
+        dbService.removeUser("Mina");
     }
 
     @BeforeAll
@@ -57,20 +57,9 @@ class UserControllerTests {
     }
 
     @Test
-    @Order(1)
-    void testGetUserById() {
-        UserDTO user = userService.getUserById(1L);
-        assertEquals(1, user.getUserId());
-        assertEquals("Pedram", user.getUsername());
-        assertEquals("pedram", user.getName());
-        assertTrue(user.getBio().isEmpty());
-    }
-
-    @Test
 	@Order(1)
 	void testGetUserByUsername() {
     	UserDTO user = userService.getUserDTOByUsername("Pedram");
-        assertEquals(1, user.getUserId());
         assertEquals("Pedram", user.getUsername());
         assertEquals("pedram", user.getName());
         assertTrue(user.getBio().isEmpty());
@@ -80,7 +69,6 @@ class UserControllerTests {
     @Order(1)
     void testGetUsernameByEmail() {
         UserDTO user = userService.getUserDTOByEmail("mirelmipedram@gmail.com");
-        assertEquals(1, user.getUserId());
         assertEquals("Pedram", user.getUsername());
         assertEquals("pedram", user.getName());
         assertTrue(user.getBio().isEmpty());
@@ -95,33 +83,31 @@ class UserControllerTests {
     @Test
     @Order(2)
     void addFollowing() {
-        userService.addFollow("Pedram", 2L);
+        userService.addFollow("Pedram", "Mina");
     }
 
     @Test
     @Order(3)
     void testFollowingsAfterFollow() {
-        var followings = userService.getUserFollowingsDTO(1L );
+        var followings = userService.getUserFollowingsDTO("Pedram" );
         assertEquals(1, followings.size());
         UserDTO user = followings.get(0);
         assertEquals("Mina", user.getUsername());
-        assertEquals(2, user.getUserId());
     }
 
     @Test
     @Order(3)
     void testFollowersAfterFollow() {
-        var followers = userService.getUserFollowersDTO(2L);
+        var followers = userService.getUserFollowersDTO("Mina");
         assertEquals(1, followers.size());
         UserDTO user = followers.get(0);
         assertEquals("Pedram", user.getUsername());
-        assertEquals(1, user.getUserId());
     }
 
     @Test
     @Order(4)
     void testRemoveFollow() {
-        userService.removeFollow("Pedram", 2L);
+        userService.removeFollow("Pedram", "Mina");
     }
 
 
@@ -129,14 +115,14 @@ class UserControllerTests {
     @Test
     @Order(5)
     void testFollowingsAfterUnfollow() {
-        var followings = userService.getUserFollowingsDTO(1L );
+        var followings = userService.getUserFollowingsDTO("Pedram" );
         assertEquals(0, followings.size());
     }
 
     @Test
     @Order(5)
     void testFollowersAfterUnfollow() {
-        var followers = userService.getUserFollowersDTO(2L);
+        var followers = userService.getUserFollowersDTO("Mina");
         assertEquals(0, followers.size());
     }
 }

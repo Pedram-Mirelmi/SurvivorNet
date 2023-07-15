@@ -27,6 +27,10 @@ public class PostReaction {
         this.post = post;
     }
 
+    public PostReaction() {
+
+    }
+
     public long getReactionId() {
         return reactionId;
     }

@@ -6,7 +6,7 @@ import java.sql.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "users", schema = "public", indexes = {@Index(columnList = "username" , name = "username_index")})
 public class User {
 
     @Id
@@ -36,13 +36,9 @@ public class User {
     @JoinColumn(name = "profilePicId", referencedColumnName = "pictureId")
     private Picture profilePic;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "backgroundPicId")
     private Picture backgroundPic;
-
-//    @OneToMany(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "postId")
-//    private Set<Post> posts;
 
     @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
@@ -69,6 +65,10 @@ public class User {
             joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "blockeeId")},
             inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")})
     private List<User> blockerList;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    private List<Post> posts;
 
     public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
@@ -179,5 +179,9 @@ public class User {
 
     public List<User> getBlockerList() {
         return blockerList;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
     }
 }

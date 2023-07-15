@@ -2,11 +2,10 @@ package se.survivor.net.models;
 
 
 import jakarta.persistence.*;
-import se.survivor.net.services.CommentService;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "posts", schema = "public")
@@ -20,7 +19,7 @@ public class Post {
     private User user;
 
     @Column(nullable = false)
-    private Date created_at;
+    private LocalDateTime createdAt;
 
     @Column(nullable = false)
     private String title;
@@ -53,10 +52,11 @@ public class Post {
     }
 
 
-    public Post(User user, String title, String caption, Post parent) {
+    public Post(User user, String title, String caption, LocalDateTime createdAt, Post parent) {
         this.user = user;
         this.title = title;
         this.caption = caption;
+        this.createdAt = createdAt;
         this.parent = parent;
     }
 
@@ -68,8 +68,8 @@ public class Post {
         return user;
     }
 
-    public Date getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public String getTitle() {

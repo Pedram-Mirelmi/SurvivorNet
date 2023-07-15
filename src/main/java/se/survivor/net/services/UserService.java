@@ -31,24 +31,23 @@ public class UserService {
         return new UserDTO(dbService.getUserByEmail(email));
     }
 
-    public List<UserDTO> getUserFollowersDTO(Long userId) {
-        return dbService.getFollowers(userId)
+    public List<UserDTO> getUserFollowersDTO(String username) {
+        return dbService.getFollowers(username)
                 .stream()
                 .map(UserDTO::new)
                 .toList();
     }
 
-    public List<UserDTO> getUserFollowingsDTO(Long userId) {
-        return dbService.getFollowings(userId)
+    public List<UserDTO> getUserFollowingsDTO(String username) {
+        return dbService.getFollowings(username)
                 .stream()
                 .map(UserDTO::new)
                 .toList();
     }
 
-    public boolean addFollow(String followerUsername, Long followeeId) {
+    public boolean addFollow(String follower, String followee) {
         try {
-            User follower = dbService.getUserByUsername(followerUsername);
-            dbService.changeFollow(follower.getUserId(), followeeId, true);
+            dbService.changeFollow(follower, followee, true);
             return true;
         }
         catch (Exception e) {
@@ -56,10 +55,9 @@ public class UserService {
         }
     }
 
-    public boolean removeFollow(String followerUsername, Long followeeId) {
+    public boolean removeFollow(String follower, String followee) {
         try {
-            User follower = dbService.getUserByUsername(followerUsername);
-            dbService.changeFollow(follower.getUserId(), followeeId, false);
+            dbService.changeFollow(follower, followee, false);
             return true;
         }
         catch (Exception e) {
@@ -67,10 +65,9 @@ public class UserService {
         }
     }
 
-    public boolean addBlock(String blockerUsername, Long blockeeId) {
+    public boolean addBlock(String blocker, String blockee) {
         try {
-            User follower = dbService.getUserByUsername(blockerUsername);
-            dbService.changeFollow(follower.getUserId(), blockeeId, true);
+            dbService.changeFollow(blocker, blockee, true);
             return true;
         }
         catch (Exception e) {
@@ -78,10 +75,9 @@ public class UserService {
         }
     }
 
-    public boolean removeBlock(String blockerUsername, Long blockeeId) {
+    public boolean removeBlock(String blocker, String blockee) {
         try {
-            User follower = dbService.getUserByUsername(blockerUsername);
-            dbService.changeFollow(follower.getUserId(), blockeeId, false);
+            dbService.changeFollow(blocker, blockee, false);
             return true;
         }
         catch (Exception e) {

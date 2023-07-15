@@ -41,6 +41,10 @@ public class Comment {
         this.createdAt = createdAt;
     }
 
+    public Comment() {
+
+    }
+
     public Long getCommentId() {
         return commentId;
     }
