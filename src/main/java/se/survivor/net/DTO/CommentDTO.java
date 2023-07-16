@@ -2,7 +2,7 @@ package se.survivor.net.DTO;
 
 import se.survivor.net.models.Comment;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 public class CommentDTO {
     private long commentId;
@@ -11,13 +11,13 @@ public class CommentDTO {
     private UserDTO user;
     private long postId;
     private String text;
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
 
     public CommentDTO(Comment comment, long numberOfLikes, long numberOfDislikes) {
         this.commentId = comment.getCommentId();
         this.isSolution = comment.isSolution();
-        this.parentId = comment.getParentComment().getCommentId();
+        this.parentId = comment.getParentComment() == null ? -1L : comment.getParentComment().getCommentId();
         this.user =  new UserDTO(comment.getUser());
         this.postId = comment.getPost().getPostId();
         this.text = comment.getText();
@@ -73,11 +73,11 @@ public class CommentDTO {
         this.text = text;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

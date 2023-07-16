@@ -4,7 +4,7 @@ package se.survivor.net.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "PostReactions")
+@Table(name = "PostReactions", schema = "public")
 public class PostReaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,6 +25,10 @@ public class PostReaction {
         this.user = user;
         this.reactionType = reactionType;
         this.post = post;
+    }
+
+    public PostReaction() {
+
     }
 
     public long getReactionId() {

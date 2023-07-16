@@ -42,7 +42,7 @@ public class CommentController {
         catch (Exception e) {
             throw new InvalidRequestParamsException("No text for comment provided");
         }
-        Long parentId = Long.parseLong(comment.getOrDefault("parent", null));
+        long parentId = Long.parseLong(comment.getOrDefault("parent", "-1"));
 
         return commentService.addComment(JWTUtility.getUsernameFromToken(jwtToken),
                 postId,

@@ -22,7 +22,6 @@ import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,10 +30,10 @@ import static se.survivor.net.utils.Constants.*;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-    private final DbService db;
+    private final DbService dbService;
 
-    public AuthController(DbService db) {
-        this.db = db;
+    public AuthController(DbService dbService) {
+        this.dbService = dbService;
     }
 
     @PostMapping("/oath/github")
@@ -45,9 +44,9 @@ public class AuthController {
         String username = userInfo.get("login").getAsString();
         String email = userInfo.get("email").getAsString();
         try {
-            User user = db.getUserByEmail(email);
+            User user = dbService.getUserByEmail(email);
         } catch (InvalidIdException e) { // new User
-            db.addUser(username, username, null, email, null, "");
+            dbService.addUser(username, username, null, email, null, "");
         }
         return Map.of(STATUS, SUCCESS,
                 AUTHORIZATION, JWTUtility.generateToken(username),
@@ -66,7 +65,7 @@ public class AuthController {
         if (username == null || password == null) {
             throw new UnauthorizedException("Empty username or password");
         }
-        if (db.authenticate(username, password)) {
+        if (dbService.authenticate(username, password)) {
             var authToken = JWTUtility.generateToken(username);
             return Map.of(AUTHORIZATION, authToken,
                     STATUS, SUCCESS);
@@ -83,7 +82,7 @@ public class AuthController {
             String email = Objects.requireNonNull(body.get(EMAIL));
             Date birthDate = Date.valueOf(body.get(BIRTHDATE));
 
-            db.addUser(username, name, password, email, birthDate, "");
+            dbService.addUser(username, name, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
             return Map.of(STATUS, SUCCESS,
                     AUTHORIZATION, authToken);
