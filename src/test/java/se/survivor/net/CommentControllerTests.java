@@ -67,6 +67,7 @@ public class CommentControllerTests {
     @AfterAll
     void tearDown() {
         dbService.removeUser("Pedram");
+        dbService.removeUser(minaUser.getUsername());
     }
 
     @Test

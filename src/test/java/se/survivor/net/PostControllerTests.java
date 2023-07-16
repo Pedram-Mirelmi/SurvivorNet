@@ -26,10 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PostControllerTests {
 
     @Autowired
-    private DbService dbService;
+    private final DbService dbService;
 
     @Autowired
-    private PostService postService;
+    private final PostService postService;
     
     private User pedramUser;
     private User minaUser;
@@ -46,6 +46,7 @@ public class PostControllerTests {
     }
 
     @BeforeAll
+    @Order(0)
     void setUp() {
         pedramUser = dbService.addUser("Pedram",
                 "pedram",
@@ -77,6 +78,7 @@ public class PostControllerTests {
     }
 
     @AfterAll
+    @Order(5)
     void tearDown() {
         dbService.removeUser(pedramUser.getUsername());
         dbService.removeUser(minaUser.getUsername());
