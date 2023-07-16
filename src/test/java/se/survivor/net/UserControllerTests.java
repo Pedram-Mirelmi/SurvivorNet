@@ -1,7 +1,6 @@
 package se.survivor.net;
 
 import org.junit.jupiter.api.*;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +26,10 @@ class UserControllerTests {
     @Autowired
     DbService dbService;
 
+
+    private User pedramUser;
+    private User minaUser;
+
     @Autowired
     public UserControllerTests(UserService userService) {
         this.userService = userService;
@@ -35,20 +38,20 @@ class UserControllerTests {
     @AfterAll
     void tearDown() throws ParseException {
         System.out.println("tearing down! =======================================================================================");
-        dbService.removeUser("Pedram");
-        dbService.removeUser("Mina");
+        dbService.removeUser(pedramUser.getUsername());
+        dbService.removeUser(minaUser.getUsername());
     }
 
     @BeforeAll
     void setUp() throws ParseException {
-        dbService.addUser("Pedram",
+        pedramUser = dbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram!");
 
-        dbService.addUser("Mina",
+        minaUser = dbService.addUser("Mina",
                 "mina",
                 "123",
                 "mina.ilkhani00@gmail.com",
@@ -59,9 +62,9 @@ class UserControllerTests {
     @Test
 	@Order(1)
 	void testGetUserByUsername() {
-    	UserDTO user = userService.getUserDTOByUsername("Pedram");
-        assertEquals("Pedram", user.getUsername());
-        assertEquals("pedram", user.getName());
+    	UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+        assertEquals(pedramUser.getUsername(), user.getUsername());
+        assertEquals(pedramUser.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
 	}
 
@@ -69,45 +72,45 @@ class UserControllerTests {
     @Order(1)
     void testGetUsernameByEmail() {
         UserDTO user = userService.getUserDTOByEmail("mirelmipedram@gmail.com");
-        assertEquals("Pedram", user.getUsername());
-        assertEquals("pedram", user.getName());
+        assertEquals(pedramUser.getUsername(), user.getUsername());
+        assertEquals(pedramUser.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
     }
 
     @Test
     @Order(1)
     void testAuthenticateWithUserPass() {
-        assertTrue(dbService.authenticate("Pedram", "123"));
+        assertTrue(dbService.authenticate(pedramUser.getUsername(), pedramUser.getPassword()));
     }
 
     @Test
     @Order(2)
     void addFollowing() {
-        userService.addFollow("Pedram", "Mina");
+        userService.addFollow(pedramUser.getUsername(), minaUser.getUsername());
     }
 
     @Test
     @Order(3)
     void testFollowingsAfterFollow() {
-        var followings = userService.getUserFollowingsDTO("Pedram" );
+        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername() );
         assertEquals(1, followings.size());
         UserDTO user = followings.get(0);
-        assertEquals("Mina", user.getUsername());
+        assertEquals(minaUser.getUsername(), user.getUsername());
     }
 
     @Test
     @Order(3)
     void testFollowersAfterFollow() {
-        var followers = userService.getUserFollowersDTO("Mina");
+        var followers = userService.getUserFollowersDTO(minaUser.getUsername());
         assertEquals(1, followers.size());
         UserDTO user = followers.get(0);
-        assertEquals("Pedram", user.getUsername());
+        assertEquals(pedramUser.getUsername(), user.getUsername());
     }
 
     @Test
     @Order(4)
     void testRemoveFollow() {
-        userService.removeFollow("Pedram", "Mina");
+        userService.removeFollow(pedramUser.getUsername(), minaUser.getUsername());
     }
 
 
@@ -115,14 +118,14 @@ class UserControllerTests {
     @Test
     @Order(5)
     void testFollowingsAfterUnfollow() {
-        var followings = userService.getUserFollowingsDTO("Pedram" );
+        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername() );
         assertEquals(0, followings.size());
     }
 
     @Test
     @Order(5)
     void testFollowersAfterUnfollow() {
-        var followers = userService.getUserFollowersDTO("Mina");
+        var followers = userService.getUserFollowersDTO(minaUser.getUsername());
         assertEquals(0, followers.size());
     }
 }

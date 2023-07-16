@@ -10,6 +10,8 @@ import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidValueException;
+import se.survivor.net.models.Post;
+import se.survivor.net.models.User;
 import se.survivor.net.services.DbService;
 import se.survivor.net.services.PostService;
 
@@ -28,6 +30,14 @@ public class PostControllerTests {
 
     @Autowired
     private PostService postService;
+    
+    private User pedramUser;
+    private User minaUser;
+    
+    private Post pedramPost1;
+    private Post pedramPost2;
+    
+    private Post minaPost1;
 
     @Autowired
     public PostControllerTests(PostService postService, DbService dbService) {
@@ -37,30 +47,30 @@ public class PostControllerTests {
 
     @BeforeAll
     void setUp() {
-        dbService.addUser("Pedram",
+        pedramUser = dbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram");
-        dbService.addUser("Mina",
+        minaUser = dbService.addUser("Mina",
                 "mina",
                 "123",
                 "minaIlkhani00@gmail.com",
                 null,
                 "This is Mina");
-        dbService.changeFollow("Pedram",
-                "Mina",
+        dbService.changeFollow(pedramUser.getUsername(),
+                minaUser.getUsername(),
                 true);
-        dbService.addPost("Pedram",
+        pedramPost1 = dbService.addPost(pedramUser.getUsername(),
                 "Pedram's first post",
                 "Hi! I'm so excited!",
                 -1);
-        dbService.addPost("Pedram",
+        pedramPost2 = dbService.addPost(pedramUser.getUsername(),
                 "Pedram's second post",
                 "Hi! I'm sooo excited",
-                1);
-        dbService.addPost("Mina",
+                pedramPost1.getPostId());
+        minaPost1 = dbService.addPost(minaUser.getUsername(),
                 "Mina's first post",
                 "Hi! I'm too excited!",
                 -1);
@@ -68,19 +78,19 @@ public class PostControllerTests {
 
     @AfterAll
     void tearDown() {
-        dbService.removeUser("Pedram");
-        dbService.removeUser("Mina");
+        dbService.removeUser(pedramUser.getUsername());
+        dbService.removeUser(minaUser.getUsername());
     }
 
     @Test
     @Order(1)
     void getHomePosts() throws InvalidValueException {
-        List<PostDTO> pedramHomePosts = postService.getHomePosts("Pedram", 0);
-        List<PostDTO> minaHomePosts = postService.getHomePosts("Mina", 0);
+        List<PostDTO> pedramHomePosts = postService.getHomePosts(pedramUser.getUsername(), 0);
+        List<PostDTO> minaHomePosts = postService.getHomePosts(minaUser.getUsername(), 0);
         assertEquals(1, pedramHomePosts.size());
         assertEquals(0, minaHomePosts.size());
-        dbService.changeFollow("Mina", "Pedram", true);
-        minaHomePosts = postService.getHomePosts("Mina", 0);
+        dbService.changeFollow(minaUser.getUsername(), pedramUser.getUsername(), true);
+        minaHomePosts = postService.getHomePosts(minaUser.getUsername(), 0);
         assertEquals(2, minaHomePosts.size());
 
         assertEquals("Mina's first post", pedramHomePosts.get(0).getTitle());
@@ -88,51 +98,51 @@ public class PostControllerTests {
         // descending!
         assertEquals("Pedram's first post", minaHomePosts.get(1).getTitle());
         assertEquals("Pedram's second post", minaHomePosts.get(0).getTitle());
-        assertEquals(1, minaHomePosts.get(0).getParentId());
+        assertEquals(pedramPost1.getPostId(), minaHomePosts.get(0).getParentId());
 
 
-        dbService.changeFollow("Mina", "Pedram", false);
+        dbService.changeFollow(minaUser.getUsername(), pedramUser.getUsername(), false);
 
-        minaHomePosts = postService.getHomePosts("Mina", 0);
+        minaHomePosts = postService.getHomePosts(minaUser.getUsername(), 0);
         assertEquals(0, minaHomePosts.size());
     }
 
     @Test
     @Order(1)
     void getPostDTO () {
-        PostDTO postDTO = postService.getPostDTO(2);
+        PostDTO postDTO = postService.getPostDTO(pedramPost2.getPostId());
         assertEquals("Pedram's second post", postDTO.getTitle());
     }
 
     @Test
     @Order(2)
     void addPost() throws InvalidValueException {
-        PostDTO postDTO = postService.addPost("Mina",
+        PostDTO postDTO = postService.addPost(minaUser.getUsername(),
                 "Mina's second post",
                 "Hiiii!",
                 -1);
-        var minaPosts = postService.getUserPosts("Mina", 0).size();
-        assertEquals(2, postService.getUserPosts("Mina", 0).size());
+        var minaPosts = postService.getUserPosts(minaUser.getUsername(), 0);
+        assertEquals(2, minaPosts.size());
     }
 
     @Test
     @Order(3)
     void addReaction()
     {
-        postService.addReaction("Pedram", 3L, 2);
-        postService.addReaction("Pedram", 3L, 1);
+        postService.addReaction(pedramUser.getUsername(), minaPost1.getPostId(), 2);
+        postService.addReaction(pedramUser.getUsername(), minaPost1.getPostId(), 1);
     }
 
     @Test
     @Order(4)
     void getPostReactions() {
-        List<PostReactionDTO> reactions = postService.getReactions(3);
+        List<PostReactionDTO> reactions = postService.getReactions(minaPost1.getPostId());
         assertEquals(1, reactions.size());
         PostReactionDTO reaction = reactions.get(0);
-        assertEquals(3, reaction.getPostId());
+        assertEquals(minaPost1.getPostId(), reaction.getPostId());
         assertEquals(1, reaction.getReactionType());
         UserDTO user = reaction.getUser();
-        assertEquals("Pedram", user.getUsername());
+        assertEquals(pedramUser.getUsername(), user.getUsername());
     }
 
 

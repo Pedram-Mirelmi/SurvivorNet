@@ -10,12 +10,12 @@ import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
+import se.survivor.net.models.User;
 import se.survivor.net.services.DbService;
 import se.survivor.net.services.PostService;
 import se.survivor.net.services.UserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -31,6 +31,9 @@ public class PictureTests {
 
     @Autowired
     private final PostService postService;
+    
+    private User pedramUser;
+    private Post pedramPost;
 
     @Autowired
     public PictureTests(DbService dbService, UserService userService, PostService postService) {
@@ -41,13 +44,13 @@ public class PictureTests {
 
     @BeforeAll
     void setUp() {
-        dbService.addUser("Pedram",
+        pedramUser = dbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram");
-        dbService.addPost("Pedram",
+        pedramPost = dbService.addPost(pedramUser.getUsername(),
                 "Pedram's first post",
                 "Hi! I'm so excited!",
                 -1);
@@ -55,15 +58,15 @@ public class PictureTests {
 
     @AfterAll
     void tearDown() {
-        dbService.removeUser("Pedram");
+        dbService.removeUser(pedramUser.getUsername());
     }
 
     @Test
     @Order(1)
     void addProfilePicture() {
-        Picture picture = userService.addProfilePicture("Pedram");
-        assertEquals("Pedram", picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername("Pedram");
+        Picture picture = userService.addProfilePicture(pedramUser.getUsername());
+        assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
         assertEquals(user.getProfilePicId(), picture.getPictureId());
     }
 
@@ -71,9 +74,9 @@ public class PictureTests {
     @Test
     @Order(1)
     void addBackgroundPicture() {
-        Picture picture = userService.addBackgroundProfilePicture("Pedram");
-        assertEquals("Pedram", picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername("Pedram");
+        Picture picture = userService.addBackgroundProfilePicture(pedramUser.getUsername());
+        assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
         assertEquals(user.getBackgroundPicId(), picture.getPictureId());
     }
 
@@ -81,8 +84,8 @@ public class PictureTests {
     @Test
     @Order(2)
     void addPostPicture() {
-        Picture picture = postService.addPictureToPost(1L);
-        PostDTO post = postService.getPostDTO(1);
+        Picture picture = postService.addPictureToPost(pedramPost.getPostId());
+        PostDTO post = postService.getPostDTO(pedramPost.getPostId());
         assertEquals(1, post.getPictures().size());
         assertEquals(post.getPictures().get(0), picture.getPictureId());
     }
