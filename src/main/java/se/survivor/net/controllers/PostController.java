@@ -5,10 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
-import se.survivor.net.services.CommentService;
-import se.survivor.net.services.DbService;
 import se.survivor.net.services.PostService;
-import se.survivor.net.services.ReactionService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -43,7 +40,7 @@ public class PostController {
 
     // www.survivor-net.com/api/posts/
     @PostMapping("")
-    public Map<String, String > addPost(
+    public Map<String, String> addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @RequestBody Map<String, String> postInfo) {
         String title = Objects.requireNonNull(postInfo.get(TITLE));

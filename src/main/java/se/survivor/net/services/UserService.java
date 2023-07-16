@@ -2,6 +2,7 @@ package se.survivor.net.services;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.models.Picture;
 import se.survivor.net.models.User;
 
 import java.util.List;
@@ -15,26 +16,39 @@ public class UserService {
         this.dbService = dbService;
     }
 
-    public User getUserById(Long userId) {
-        return dbService.getUserById(userId);
+    public UserDTO getUserById(Long userId) {
+        return new UserDTO(dbService.getUserById(userId));
     }
 
     public UserDTO getUserDTOById(Long userId) {
         return new UserDTO(dbService.getUserById(userId));
     }
 
-    public List<UserDTO> getUserFollowersDTO(Long userId) {
-        return dbService.getFollowers(userId).stream().map(UserDTO::new).toList();
+    public UserDTO getUserDTOByUsername(String username) {
+        return new UserDTO(dbService.getUserByUsername(username));
     }
 
-    public List<UserDTO> getUserFollowingsDTO(Long userId) {
-        return dbService.getFollowings(userId).stream().map(UserDTO::new).toList();
+    public UserDTO getUserDTOByEmail(String email) {
+        return new UserDTO(dbService.getUserByEmail(email));
     }
 
-    public boolean addFollow(String followerUsername, Long followeeId) {
+    public List<UserDTO> getUserFollowersDTO(String username) {
+        return dbService.getFollowers(username)
+                .stream()
+                .map(UserDTO::new)
+                .toList();
+    }
+
+    public List<UserDTO> getUserFollowingsDTO(String username) {
+        return dbService.getFollowings(username)
+                .stream()
+                .map(UserDTO::new)
+                .toList();
+    }
+
+    public boolean addFollow(String follower, String followee) {
         try {
-            User follower = dbService.getUserByUsername(followerUsername);
-            dbService.changeFollow(follower.getUserId(), followeeId, true);
+            dbService.changeFollow(follower, followee, true);
             return true;
         }
         catch (Exception e) {
@@ -42,10 +56,9 @@ public class UserService {
         }
     }
 
-    public boolean removeFollow(String followerUsername, Long followeeId) {
+    public boolean removeFollow(String follower, String followee) {
         try {
-            User follower = dbService.getUserByUsername(followerUsername);
-            dbService.changeFollow(follower.getUserId(), followeeId, false);
+            dbService.changeFollow(follower, followee, false);
             return true;
         }
         catch (Exception e) {
@@ -53,10 +66,9 @@ public class UserService {
         }
     }
 
-    public boolean addBlock(String blockerUsername, Long blockeeId) {
+    public boolean addBlock(String blocker, String blockee) {
         try {
-            User follower = dbService.getUserByUsername(blockerUsername);
-            dbService.changeFollow(follower.getUserId(), blockeeId, true);
+            dbService.changeFollow(blocker, blockee, true);
             return true;
         }
         catch (Exception e) {
@@ -64,10 +76,9 @@ public class UserService {
         }
     }
 
-    public boolean removeBlock(String blockerUsername, Long blockeeId) {
+    public boolean removeBlock(String blocker, String blockee) {
         try {
-            User follower = dbService.getUserByUsername(blockerUsername);
-            dbService.changeFollow(follower.getUserId(), blockeeId, false);
+            dbService.changeFollow(blocker, blockee, false);
             return true;
         }
         catch (Exception e) {
@@ -77,5 +88,13 @@ public class UserService {
 
     public List<UserDTO> searchUsers(String query) {
         return dbService.searchUsers(query).stream().map(UserDTO::new).toList();
+    }
+
+    public Picture addProfilePicture(String username) {
+        return dbService.addPictureForProfile(username);
+    }
+
+    public Picture addBackgroundProfilePicture(String username) {
+        return dbService.addBackgroundPictureForProfile(username);
     }
 }

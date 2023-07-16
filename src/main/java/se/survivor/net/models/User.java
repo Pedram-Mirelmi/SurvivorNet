@@ -6,11 +6,11 @@ import java.sql.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "public", indexes = {@Index(columnList = "username" , name = "username_index")})
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -32,43 +32,54 @@ public class User {
     @Column(nullable = false)
     private String bio;
 
-    @OneToOne
-    @JoinColumn(name = "profilePicId", referencedColumnName = "pictureId")
+    @OneToOne(targetEntity = Picture.class,
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL)
+    @JoinColumn(name = "profilePicId",
+            referencedColumnName = "pictureId")
     private Picture profilePic;
 
-    @OneToOne
-    @JoinColumn(name = "backgroundPicId")
+    @OneToOne(targetEntity = Picture.class,
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL)
+    @JoinColumn(name = "backgroundPicId",
+            referencedColumnName = "pictureId")
     private Picture backgroundPic;
 
-//    @OneToMany(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "postId")
-//    private Set<Post> posts;
+    @OneToMany(targetEntity = Picture.class,
+            mappedBy = "owner",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL)
+    private List<Picture> pictures;
 
-    @ManyToMany(targetEntity = User.class, fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity = User.class,
+            fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-                joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")},
-                inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followeeId")})
+                joinColumns = {@JoinColumn(referencedColumnName = "userId",
+                        name = "followerId")},
+                inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
+                        name = "followeeId")})
     private List<User> followings;
-
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-            joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "followeeId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "followerId")})
+            joinColumns = {@JoinColumn( referencedColumnName = "userId",
+                    name = "followeeId")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
+                    name = "followerId")})
     private List<User> followers;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockeeId")})
-    private List<User> blockeeList;
+            joinColumns = {@JoinColumn(referencedColumnName = "userId",
+                    name = "blockerId")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
+                    name = "blockeeId")})
+    private List<User> blockList;
 
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn( referencedColumnName = "userId", name = "blockeeId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId", name = "blockerId")})
-    private List<User> blockerList;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    private List<Post> posts;
 
     public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
@@ -173,11 +184,15 @@ public class User {
         return followers;
     }
 
-    public List<User> getBlockeeList() {
-        return blockeeList;
+    public List<Post> getPosts() {
+        return posts;
     }
 
-    public List<User> getBlockerList() {
-        return blockerList;
+    public List<Picture> getPictures() {
+        return pictures;
+    }
+
+    public List<User> getBlockList() {
+        return blockList;
     }
 }

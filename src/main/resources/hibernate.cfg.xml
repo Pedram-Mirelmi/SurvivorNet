@@ -4,20 +4,20 @@
         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="connection.url">jdbc:mysql://localhost:3306/SurvivorNet</property>
-        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="connection.username">root</property>
-        <property name="connection.password">root</property>
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/survivornet</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">root</property>
 
         <property name="connection.pool_size">20</property>
 
-        <!--    SQL dialect-->
-        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+        <!-- SQL dialect -->
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
 
         <!--    Echo all executed sql to stdout -->
         <property name="show_sql">true</property>
 
-        <!--    Names the annotated entity class-->
+        <!-- Update database on startup -->
         <property name="hibernate.hbm2ddl.auto">update</property>
 
         <mapping class="se.survivor.net.models.User"/>
@@ -25,6 +25,7 @@
         <mapping class="se.survivor.net.models.Post"/>
         <mapping class="se.survivor.net.models.PostReaction"/>
         <mapping class="se.survivor.net.models.Comment"/>
+        <mapping class="se.survivor.net.models.CommentLike"/>
 
 
 
