@@ -25,6 +25,7 @@
         <mapping class="se.survivor.net.models.Post"/>
         <mapping class="se.survivor.net.models.PostReaction"/>
         <mapping class="se.survivor.net.models.Comment"/>
+        <mapping class="se.survivor.net.models.CommentLike"/>
 
 
 

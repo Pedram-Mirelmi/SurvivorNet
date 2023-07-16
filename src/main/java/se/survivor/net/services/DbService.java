@@ -81,7 +81,7 @@ public class DbService {
         var resultList = entityManager.createQuery(
                     "SELECT u FROM User u " +
                     "WHERE u.username=:username", User.class)
-                .setParameter("username", username)
+                .setParameter(USERNAME, username)
                 .getResultList();
         if(resultList.isEmpty()) {
             entityManager.getTransaction().rollback();
@@ -104,7 +104,7 @@ public class DbService {
         List<User> resultList = entityManager.createQuery(
                     "SELECT u FROM User u " +
                     "WHERE u.email=:email", User.class)
-                .setParameter("email", email)
+                .setParameter(EMAIL, email)
                 .getResultList();
         if(resultList.isEmpty()) {
             throw new InvalidIdException("Invalid email");
@@ -151,7 +151,7 @@ public class DbService {
                         "WHERE u.username LIKE '%:query%' " +
                         "OR u.name LIKE '%:query%' " +
                         "OR u.email LIKE '%:query%'", User.class)
-                .setParameter("query", query)
+                .setParameter(QUERY, query)
                 .getResultList();
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -294,7 +294,7 @@ public class DbService {
                     "       WHERE u.username=:username)" +
                     "ORDER BY p.createdAt DESC ", Post.class)
                 .setParameter(USERNAME, username)
-                .setFirstResult(chunk)
+                .setFirstResult(chunk*10)
                 .setMaxResults((chunk+1)*10)
                 .getResultList();
 
@@ -315,7 +315,7 @@ public class DbService {
                     "SELECT COUNT(*) " +
                     "FROM Comment c " +
                     "WHERE c.post.postId = :postId", Long.class)
-                .setParameter("postId", postId)
+                .setParameter(POST_ID, postId)
                 .getSingleResult();
 
         entityManager.getTransaction().commit();
@@ -333,7 +333,7 @@ public class DbService {
                 "SELECT COUNT(*) " +
                         "FROM PostReaction pr " +
                         "WHERE pr.post.postId = :postId", Long.class)
-                .setParameter("postId", postId)
+                .setParameter(POST_ID, postId)
                 .getSingleResult();
 
         entityManager.getTransaction().commit();
@@ -376,11 +376,13 @@ public class DbService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         var comments = entityManager.createQuery("SELECT c from Comment c " +
-                "WHERE c.post.postId=:postId AND c.isSolution=FALSE")
-                .setParameter("postId", postId)
-                .setFirstResult((chunk) * 10)
+                "WHERE c.post.postId=:postId AND c.isSolution=FALSE", Comment.class)
+                .setParameter(POST_ID, postId)
+                .setFirstResult(chunk * 10)
                 .setMaxResults((chunk+1) * 10)
                 .getResultList();
+
+        comments.forEach(c -> Hibernate.initialize(c.getUser()));
 
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -413,7 +415,7 @@ public class DbService {
                 "SELECT pr FROM PostReaction pr " +
                     " WHERE pr.user.username=:username AND pr.post.postId=:postId")
                 .setParameter(USERNAME, username)
-                .setParameter("postId", postId)
+                .setParameter(POST_ID, postId)
                 .getResultList();
         if(!resultList.isEmpty()) {
             entityManager.remove(resultList.get(0));
@@ -465,17 +467,17 @@ public class DbService {
         return dislikes;
     }
 
-    public Comment addComment(String username, long postId, String commentText, Long parentId) {
+    public Comment addComment(String username, long postId, String commentText, long parentId) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         User user = getUserByUsername(username, entityManager);
         Post post = getPostById(postId, entityManager);
         Comment comment;
         Comment parent = null;
-        if(parentId != null) {
+        if(parentId != -1) {
             parent = getCommentById(parentId, entityManager);
         }
-        comment = new Comment(user, post, commentText, Date.valueOf(LocalDate.now()), parent, false);
+        comment = new Comment(user, post, commentText, LocalDateTime.now(), parent, false);
         entityManager.persist(comment);
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -495,9 +497,9 @@ public class DbService {
         entityManager.getTransaction().begin();
         var solutions = entityManager.createQuery("SELECT c from Comment c " +
                 "WHERE c.post.postId=:postId AND c.isSolution=TRUE")
-                .setParameter("postId", postId)
-                .setFirstResult((chunk-1) * 10)
-                .setMaxResults((chunk) * 10)
+                .setParameter(POST_ID, postId)
+                .setFirstResult(chunk * 10)
+                .setMaxResults((chunk+1) * 10)
                 .getResultList();
 
         entityManager.getTransaction().commit();
@@ -510,7 +512,7 @@ public class DbService {
         entityManager.getTransaction().begin();
         User user = getUserByUsername(username, entityManager);
         Post post = getPostById(postId, entityManager);
-        Comment comment = new Comment(user, post, solutionText, Date.valueOf(LocalDate.now()), null, true);
+        Comment comment = new Comment(user, post, solutionText, LocalDateTime.now(), null, true);
         entityManager.persist(comment);
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -532,9 +534,12 @@ public class DbService {
         user.setBackgroundPic(null);
 
         entityManager.createQuery("DELETE FROM Picture p WHERE p.owner.userId=:userId")
-                .setParameter("userId", user.getUserId())
+                .setParameter(USER_ID, user.getUserId())
                 .executeUpdate();
-
+        
+        entityManager.createQuery("DELETE FROM CommentLike cl WHERE cl.user.userId=:userId")
+                .setParameter(USER_ID, user.getUserId())
+                .executeUpdate();
 
         entityManager.createQuery("DELETE FROM Comment c WHERE c.user.userId=:userId")
                 .setParameter(USER_ID, user.getUserId())
@@ -549,10 +554,6 @@ public class DbService {
                 .executeUpdate();
 
 
-//        entityManager.createQuery(
-//                "DELETE FROM PostReaction pr" +
-//            " WHERE pr.id IN (SELECT ")
-
         entityManager.remove(user);
 
         entityManager.getTransaction().commit();
@@ -560,4 +561,29 @@ public class DbService {
     }
 
 
+    public void addCommentLike(String username, long commentId, boolean likes) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Comment comment = getCommentById(commentId, entityManager);
+
+        if(!hasUserLikedComment(username, commentId, entityManager)) {
+            User user = getUserByUsername(username, entityManager);
+            CommentLike commentLike = new CommentLike(user, comment, likes);
+            entityManager.persist(commentLike);
+        }
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+    private boolean hasUserLikedComment(String username, long commentId, EntityManager entityManager) {
+    return !entityManager.createQuery(
+                "SELECT cl FROM CommentLike cl " +
+                "WHERE cl.user.username=:username AND cl.comment.commentId=:commentId")
+            .setParameter(USERNAME, username)
+            .setParameter(COMMENT_ID, commentId)
+            .getResultList()
+            .isEmpty();
+    }
 }

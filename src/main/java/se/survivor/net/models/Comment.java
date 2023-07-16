@@ -2,14 +2,15 @@ package se.survivor.net.models;
 
 import jakarta.persistence.*;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "comments", schema = "public")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long commentId;
+    private long commentId;
 
     @Column(nullable = false)
     private boolean isSolution;
@@ -22,7 +23,7 @@ public class Comment {
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     private User user;
 
-    @ManyToOne(targetEntity = Post.class)
+    @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
     private Post post;
 
@@ -30,9 +31,14 @@ public class Comment {
     private String text;
 
     @Column(nullable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
-    public Comment(User user, Post post, String text, Date createdAt, Comment parentComment, boolean isSolution) {
+    @OneToMany(targetEntity = CommentLike.class,
+            mappedBy = "comment",
+            fetch = FetchType.LAZY)
+    private List<CommentLike> likes;
+
+    public Comment(User user, Post post, String text, LocalDateTime createdAt, Comment parentComment, boolean isSolution) {
         this.isSolution = isSolution;
         this.parentComment = parentComment;
         this.user = user;
@@ -69,7 +75,7 @@ public class Comment {
         return text;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 }

@@ -24,7 +24,7 @@ public class CommentService {
                 .toList();
     }
 
-    public CommentDTO addComment(String username, long postId, String commentText, Long parentId) {
+    public CommentDTO addComment(String username, long postId, String commentText, long parentId) {
         Comment newComment = dbService.addComment(username, postId, commentText, parentId);
         return new CommentDTO(newComment, 0, 0);
     }
@@ -41,5 +41,9 @@ public class CommentService {
     public CommentDTO addSolution(String username, long postId, String solutionText) {
         Comment newSolution = dbService.addSolution(username, postId, solutionText);
         return new CommentDTO(newSolution, 0, 0);
+    }
+
+    public void likeComment(String username, long commentId, boolean likes) {
+        dbService.addCommentLike(username, commentId, likes);
     }
 }
