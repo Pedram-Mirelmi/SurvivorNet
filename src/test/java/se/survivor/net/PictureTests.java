@@ -64,20 +64,20 @@ public class PictureTests {
 
     @Test
     @Order(1)
-    void addProfilePicture() {
+    void addProfilePicture() throws UnauthorizedException {
         Picture picture = userService.addProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
         assertEquals(user.getProfilePicId(), picture.getPictureId());
     }
 
 
     @Test
     @Order(1)
-    void addBackgroundPicture() {
+    void addBackgroundPicture() throws UnauthorizedException {
         Picture picture = userService.addBackgroundProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
         assertEquals(user.getBackgroundPicId(), picture.getPictureId());
     }
 

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
 import se.survivor.net.services.DbService;
 import se.survivor.net.services.UserService;
@@ -61,8 +62,8 @@ class UserControllerTests {
 
     @Test
 	@Order(1)
-	void testGetUserByUsername() {
-    	UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+	void testGetUserByUsername() throws UnauthorizedException {
+    	UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), user.getUsername());
         assertEquals(pedramUser.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
@@ -70,8 +71,8 @@ class UserControllerTests {
 
 	@Test
     @Order(1)
-    void testGetUsernameByEmail() {
-        UserDTO user = userService.getUserDTOByEmail("mirelmipedram@gmail.com");
+    void testGetUsernameByEmail() throws UnauthorizedException {
+        UserDTO user = userService.getUserDTOByEmail(pedramUser.getEmail(), "mirelmipedram@gmail.com");
         assertEquals(pedramUser.getUsername(), user.getUsername());
         assertEquals(pedramUser.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
@@ -91,8 +92,8 @@ class UserControllerTests {
 
     @Test
     @Order(3)
-    void testFollowingsAfterFollow() {
-        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername() );
+    void testFollowingsAfterFollow() throws UnauthorizedException {
+        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername(), pedramUser.getUsername() );
         assertEquals(1, followings.size());
         UserDTO user = followings.get(0);
         assertEquals(minaUser.getUsername(), user.getUsername());
@@ -100,8 +101,8 @@ class UserControllerTests {
 
     @Test
     @Order(3)
-    void testFollowersAfterFollow() {
-        var followers = userService.getUserFollowersDTO(minaUser.getUsername());
+    void testFollowersAfterFollow() throws UnauthorizedException {
+        var followers = userService.getUserFollowersDTO(minaUser.getUsername(), minaUser.getUsername());
         assertEquals(1, followers.size());
         UserDTO user = followers.get(0);
         assertEquals(pedramUser.getUsername(), user.getUsername());
@@ -117,15 +118,15 @@ class UserControllerTests {
 
     @Test
     @Order(5)
-    void testFollowingsAfterUnfollow() {
-        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername() );
+    void testFollowingsAfterUnfollow() throws UnauthorizedException {
+        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername(), pedramUser.getUsername() );
         assertEquals(0, followings.size());
     }
 
     @Test
     @Order(5)
-    void testFollowersAfterUnfollow() {
-        var followers = userService.getUserFollowersDTO(minaUser.getUsername());
+    void testFollowersAfterUnfollow() throws UnauthorizedException {
+        var followers = userService.getUserFollowersDTO(minaUser.getUsername(), minaUser.getUsername());
         assertEquals(0, followers.size());
     }
 }

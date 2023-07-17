@@ -27,9 +27,11 @@ public class UserController {
 
     @GetMapping("api/users/{username}")
     public UserDTO getUserBuyUsername(
-            @PathVariable(USERNAME) String username,
-            @RequestHeader(AUTHORIZATION) String jwtToken) {
-        return userService.getUserDTOByUsername(username);
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(USERNAME) String username) throws UnauthorizedException {
+        return userService.getUserDTOByUsername(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                username);
     }
 
     @GetMapping("api/users/{username}/profile")
@@ -37,8 +39,12 @@ public class UserController {
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username,
             @RequestParam int chunk) throws InvalidValueException, UnauthorizedException {
-        return Map.of(USER, userService.getUserDTOByUsername(username),
-                POSTS, postService.getUserPosts(
+        return Map.of(
+                USER,
+                userService.getUserDTOByUsername(JWTUtility.getUsernameFromToken(jwtToken),
+                                                            username),
+                POSTS,
+                postService.getUserPosts(
                         JWTUtility.getUsernameFromToken(jwtToken),
                         username,
                         chunk));
@@ -46,15 +52,25 @@ public class UserController {
 
     @GetMapping("api/users/{username}/followers")
     public Map<String, Object> getUserFollowers(
-            @PathVariable(USERNAME) String username) {
-        return Map.of(USER, userService.getUserDTOByUsername(username),
-                FOLLOWERS, userService.getUserFollowersDTO(username));
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(USERNAME) String username) throws UnauthorizedException {
+        return Map.of(USER, userService.getUserDTOByUsername(
+                    JWTUtility.getUsernameFromToken(jwtToken),
+                    username),
+                FOLLOWERS,
+                userService.getUserFollowersDTO(
+                        JWTUtility.getUsernameFromToken(jwtToken),
+                        username));
     }
 
     @GetMapping("api/users/{username}/followings")
-    public Map<String, Object> getUserFollowings(@PathVariable(USERNAME) String username) {
+    public Map<String, Object> getUserFollowings(
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(USERNAME) String username) throws UnauthorizedException {
         return Map.of(USERNAME, username,
-                FOLLOWINGS, userService.getUserFollowingsDTO(username));
+                FOLLOWINGS, userService.getUserFollowingsDTO(
+                        JWTUtility.getUsernameFromToken(jwtToken),
+                        username));
     }
 
     @PostMapping("api/users/follow/{username}")
