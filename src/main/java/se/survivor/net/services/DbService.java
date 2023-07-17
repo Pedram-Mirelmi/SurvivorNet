@@ -12,7 +12,6 @@ import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.models.*;
 
 import java.sql.Date;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +25,7 @@ public class DbService {
     private final EntityManagerFactory entityManagerFactory;
 
 
-    public DbService() throws ParseException {
+    public DbService() {
         var registry = new StandardServiceRegistryBuilder().configure().build();
         entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
@@ -56,10 +55,12 @@ public class DbService {
         return user;
     }
 
-    private User getUserById(Long userId, EntityManager entityManager) {
+    protected User getUserById(Long userId, EntityManager entityManager) {
         User user = entityManager.find(User.class, userId);
         if(user == null) {
-            entityManager.getTransaction().rollback();
+            if(entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
             entityManager.close();
             throw new InvalidIdException("Invalid user Id");
         }
@@ -84,7 +85,9 @@ public class DbService {
                 .setParameter(USERNAME, username)
                 .getResultList();
         if(resultList.isEmpty()) {
-            entityManager.getTransaction().rollback();
+            if(entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
             entityManager.close();
             throw new InvalidIdException("Invalid Username");
         }
@@ -353,10 +356,12 @@ public class DbService {
         return post;
     }
 
-    private Post getPostById(long postId, EntityManager entityManager) {
+    protected Post getPostById(long postId, EntityManager entityManager) {
         Post post = entityManager.find(Post.class, postId);
         if(post == null) {
-            entityManager.getTransaction().rollback();
+            if(entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
             entityManager.close();
             throw new InvalidIdException("Invalid post Id");
         }
@@ -364,7 +369,6 @@ public class DbService {
     }
 
     public PostDTO getPostDTO(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
         Post post = getPostById(postId);
         return new PostDTO(post,
                 getPostCommentCount(postId),

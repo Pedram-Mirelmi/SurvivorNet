@@ -4,6 +4,7 @@ package se.survivor.net.controllers;
 import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.exceptions.InvalidRequestParamsException;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.services.CommentService;
 import se.survivor.net.utils.JWTUtility;
 
@@ -24,17 +25,21 @@ public class CommentController {
 
     @GetMapping("/api/posts/{postId}/comments")
     public List<CommentDTO> getPostComments(
+            @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
-            @RequestParam(value = CHUNK, required = false)Optional<Integer> chunk) {
+            @RequestParam(value = CHUNK) Optional<Integer> chunk) throws UnauthorizedException {
 
-        return commentService.getPostComments(postId, chunk.orElse(0));
+        return commentService.getPostComments(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                postId,
+                chunk.orElse(0));
     }
 
     @PostMapping("/api/posts/{postId}/comments")
     public CommentDTO addComment(
-            @PathVariable(POST_ID) long postId,
             @RequestHeader(AUTHORIZATION) String jwtToken,
-            @RequestBody Map<String, String> comment) throws InvalidRequestParamsException {
+            @PathVariable(POST_ID) long postId,
+            @RequestBody Map<String, String> comment) throws InvalidRequestParamsException, UnauthorizedException {
         String commentText;
         try {
             commentText = comment.get(TEXT);
@@ -52,16 +57,20 @@ public class CommentController {
 
     @GetMapping("/api/posts/{postId}/solutions")
     public List<CommentDTO> getSolutions(
+            @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
-            @RequestParam(value = CHUNK, required = false)Optional<Integer> chunk) {
-        return commentService.getPostSolutions(postId, chunk.orElse(0));
+            @RequestParam(value = CHUNK, required = false)Optional<Integer> chunk) throws UnauthorizedException {
+        return commentService.getPostSolutions(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                postId,
+                chunk.orElse(0));
     }
 
     @PostMapping("/api/posts/{postId}/solutions")
     public CommentDTO addSolution(
             @PathVariable(POST_ID) long postId,
             @RequestHeader(AUTHORIZATION) String jwtToken,
-            @RequestBody Map<String, String> solution) throws InvalidRequestParamsException {
+            @RequestBody Map<String, String> solution) throws InvalidRequestParamsException, UnauthorizedException {
         String solutionText;
         try {
             solutionText = solution.get(TEXT);
