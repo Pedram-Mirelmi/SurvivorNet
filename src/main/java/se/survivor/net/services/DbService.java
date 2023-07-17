@@ -170,7 +170,7 @@ public class DbService {
 
         try {
             // one way is enough to store both ways!
-            if(follow) {
+            if(follow && !followeeUser.getBlockList().contains(followerUser)) {
                 followerUser.getFollowings().add(followeeUser);
             }
             else {
@@ -195,6 +195,8 @@ public class DbService {
         try {
             // one way is enough to store both ways!
             if(block) {
+                blockerUser.getFollowings().remove(blockeeUser);
+                blockeeUser.getFollowings().remove(blockerUser);
                 blockerUser.getBlockList().add(blockeeUser);
             }
             else {
