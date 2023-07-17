@@ -16,7 +16,7 @@ import java.util.Objects;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api/posts/")
+@RequestMapping("api/posts")
 public class PostController {
 
     private final PostService postService;
@@ -62,7 +62,7 @@ public class PostController {
     }
 
 
-    @PostMapping("/posts/{postId}/reactions")
+    @PostMapping("{postId}/reactions")
     public Map<String, Object> addReaction(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(POST_ID) long postId,
@@ -74,7 +74,7 @@ public class PostController {
         );
     }
 
-    @GetMapping("/posts/{postId}/reactions")
+    @GetMapping("{postId}/reactions")
     public List<PostReactionDTO> getPostReactions(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(POST_ID) long postId) throws UnauthorizedException {

@@ -36,7 +36,7 @@ public class AuthController {
         this.userDbService = userDbService;
     }
 
-    @PostMapping("/oath/github")
+    @PostMapping("oath/github")
     public Map<String, String> oauthWithGithub(@RequestParam("code") String code) throws IOException, ParseException {
 
         String githubUserToken = getUserTokenFromGithub(code);
@@ -53,12 +53,12 @@ public class AuthController {
                 USERNAME, username);
     }
 
-    @GetMapping("/api/logout")
+    @GetMapping("logout")
     public Map<String, String> logout(@RequestHeader(AUTHORIZATION) String authToken) {
         return Map.of(STATUS, SUCCESS);
     }
 
-    @PostMapping("/api/login")
+    @PostMapping("login")
     public Map<String, String> login(@RequestBody Map<String, String> body) throws NoSuchAlgorithmException, UnauthorizedException {
         String username = body.get("username");
         String password = body.get("password");
@@ -73,7 +73,7 @@ public class AuthController {
         throw new UnauthorizedException("Username or password was wrong");
     }
 
-    @PostMapping("/api/register")
+    @PostMapping("register")
     public Map<String, String> register(@RequestBody Map<String, String> body) throws InvalidRequestParamsException {
         try {
             String username = Objects.requireNonNull(body.get(USERNAME));

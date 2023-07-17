@@ -14,6 +14,7 @@ import java.util.Map;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
+@RequestMapping("api/users")
 public class UserController {
 
     final private UserService userService;
@@ -25,7 +26,7 @@ public class UserController {
     }
 
 
-    @GetMapping("api/users/{username}")
+    @GetMapping("{username}")
     public UserDTO getUserBuyUsername(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username) throws UnauthorizedException {
@@ -34,7 +35,7 @@ public class UserController {
                 username);
     }
 
-    @GetMapping("api/users/{username}/profile")
+    @GetMapping("{username}/profile")
     public Map<String, Object> getUserProfile(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username,
@@ -50,7 +51,7 @@ public class UserController {
                         chunk));
     }
 
-    @GetMapping("api/users/{username}/followers")
+    @GetMapping("{username}/followers")
     public Map<String, Object> getUserFollowers(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username) throws UnauthorizedException {
@@ -63,7 +64,7 @@ public class UserController {
                         username));
     }
 
-    @GetMapping("api/users/{username}/followings")
+    @GetMapping("{username}/followings")
     public Map<String, Object> getUserFollowings(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username) throws UnauthorizedException {
@@ -73,7 +74,7 @@ public class UserController {
                         username));
     }
 
-    @PostMapping("api/users/follow/{username}")
+    @PostMapping("follow/{username}")
     public Map<String, Object> followUser(@PathVariable(USERNAME) String followee,
                                           @RequestHeader(AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
@@ -81,7 +82,7 @@ public class UserController {
         return Map.of(STATUS, success ? SUCCESS : FAIL);
     }
 
-    @DeleteMapping("api/users/follow/{username}")
+    @DeleteMapping("follow/{username}")
     public Map<String, Object> unfollowUser(@PathVariable(USERNAME) String followee,
                                           @RequestHeader(AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
@@ -89,7 +90,7 @@ public class UserController {
         return Map.of(STATUS, success ? SUCCESS : FAIL);
     }
 
-    @PostMapping("api/users/block/{username}")
+    @PostMapping("block/{username}")
     public Map<String, Object> block(@PathVariable(USERNAME) String blockee,
                                           @RequestHeader(AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
@@ -97,17 +98,15 @@ public class UserController {
         return Map.of(STATUS, success ? SUCCESS : FAIL);
     }
 
-    @DeleteMapping("api/users/block/{username}")
+    @DeleteMapping("block/{username}")
     public Map<String, Object> unblock(@PathVariable(USERNAME) String blockee,
                                             @RequestHeader(AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         boolean success = userService.removeBlock(username, blockee);
         return Map.of(STATUS, success ? SUCCESS : FAIL);
     }
-    @GetMapping("api/users/search")
+    @GetMapping("search")
     public List<UserDTO> searchUsers(@RequestParam(QUERY) String query) {
         return userService.searchUsers(query);
     }
-
-
 }

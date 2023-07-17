@@ -15,15 +15,16 @@ import java.util.Optional;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
+@RequestMapping("/api/posts/{postId}")
 public class CommentController {
-    private CommentService commentService;
+    private final CommentService commentService;
 
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
 
 
-    @GetMapping("/api/posts/{postId}/comments")
+    @GetMapping("comments")
     public List<CommentDTO> getPostComments(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
@@ -35,7 +36,7 @@ public class CommentController {
                 chunk.orElse(0));
     }
 
-    @PostMapping("/api/posts/{postId}/comments")
+    @PostMapping("comments")
     public CommentDTO addComment(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(POST_ID) long postId,
@@ -55,7 +56,7 @@ public class CommentController {
                 parentId);
     }
 
-    @GetMapping("/api/posts/{postId}/solutions")
+    @GetMapping("solutions")
     public List<CommentDTO> getSolutions(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
@@ -66,7 +67,7 @@ public class CommentController {
                 chunk.orElse(0));
     }
 
-    @PostMapping("/api/posts/{postId}/solutions")
+    @PostMapping("solutions")
     public CommentDTO addSolution(
             @PathVariable(POST_ID) long postId,
             @RequestHeader(AUTHORIZATION) String jwtToken,
