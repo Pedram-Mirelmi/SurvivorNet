@@ -10,6 +10,7 @@ import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidValueException;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 import se.survivor.net.services.DbService;
@@ -111,34 +112,33 @@ public class PostControllerTests {
 
     @Test
     @Order(1)
-    void getPostDTO () {
-        PostDTO postDTO = postService.getPostDTO(pedramPost2.getPostId());
+    void getPostDTO () throws UnauthorizedException {
+        PostDTO postDTO = postService.getPostDTO(pedramUser.getUsername(), pedramPost2.getPostId());
         assertEquals("Pedram's second post", postDTO.getTitle());
     }
 
     @Test
     @Order(2)
-    void addPost() throws InvalidValueException {
+    void addPost() throws InvalidValueException, UnauthorizedException {
         PostDTO postDTO = postService.addPost(minaUser.getUsername(),
                 "Mina's second post",
                 "Hiiii!",
                 -1);
-        var minaPosts = postService.getUserPosts(minaUser.getUsername(), 0);
+        var minaPosts = postService.getUserPosts(minaUser.getUsername(), minaUser.getUsername(), 0);
         assertEquals(2, minaPosts.size());
     }
 
     @Test
     @Order(3)
-    void addReaction()
-    {
+    void addReaction() throws UnauthorizedException {
         postService.addReaction(pedramUser.getUsername(), minaPost1.getPostId(), 2);
         postService.addReaction(pedramUser.getUsername(), minaPost1.getPostId(), 1);
     }
 
     @Test
     @Order(4)
-    void getPostReactions() {
-        List<PostReactionDTO> reactions = postService.getReactions(minaPost1.getPostId());
+    void getPostReactions() throws UnauthorizedException {
+        List<PostReactionDTO> reactions = postService.getReactions(minaUser.getUsername(), minaPost1.getPostId());
         assertEquals(1, reactions.size());
         PostReactionDTO reaction = reactions.get(0);
         assertEquals(minaPost1.getPostId(), reaction.getPostId());

@@ -4,20 +4,21 @@ import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
-import se.survivor.net.models.User;
 
 import java.util.List;
 
 @Service
 public class PostService {
 
-    DbService dbService;
-    private CommentService commentService;
+    private final DbService dbService;
+    private final AuthorizationService authorizationService;
 
-    public PostService(DbService dbService) {
+    public PostService(DbService dbService, AuthorizationService authorizationService) {
         this.dbService = dbService;
+        this.authorizationService = authorizationService;
     }
 
     public List<PostDTO> getHomePosts(String username, int chunk) throws InvalidValueException {
@@ -34,7 +35,10 @@ public class PostService {
         ).toList();
     }
 
-    public PostDTO getPostDTO(long postId) {
+    public PostDTO getPostDTO(String username, long postId) throws UnauthorizedException {
+        if(!authorizationService.canViewPost(username, postId)) {
+            throw new UnauthorizedException("User cannot view this post");
+        }
         return dbService.getPostDTO(postId);
     }
 
@@ -47,11 +51,14 @@ public class PostService {
                 post.getParent() == null ? -1 : post.getParent().getPostId());
     }
 
-    public List<PostDTO> getUserPosts(String username, int chunk) throws InvalidValueException {
+    public List<PostDTO> getUserPosts(String viewerUsername, String underViewUsername, int chunk) throws InvalidValueException, UnauthorizedException {
         if (chunk < 0) {
             throw new InvalidValueException("Invalid negative chunk value");
         }
-        return dbService.getUserPosts(username, chunk)
+        if(!authorizationService.canAccessProfile(viewerUsername, underViewUsername)) {
+            throw new UnauthorizedException("User cannot access this user!");
+        }
+        return dbService.getUserPosts(underViewUsername, chunk)
                 .stream()
                 .map(p -> new PostDTO(p,
                         dbService.getPostCommentCount(p.getPostId()),
@@ -60,17 +67,26 @@ public class PostService {
                 )).toList();
     }
 
-    public void addReaction(String username, long postId, int reactionType) {
+    public void addReaction(String username, long postId, int reactionType) throws UnauthorizedException {
+        if(!authorizationService.canAddReaction(username, postId)) {
+            throw new UnauthorizedException("User cannot add reaction to this post");
+        }
         dbService.addReaction(username, postId, reactionType);
     }
 
-    public List<PostReactionDTO> getReactions(long postId) {
+    public List<PostReactionDTO> getReactions(String username, long postId) throws UnauthorizedException {
+        if(!authorizationService.canViewPostReactions(username, postId)) {
+            throw new UnauthorizedException("User cannot view this post's reactions");
+        }
         return dbService.getPostReactions(postId).
                 stream().
                 map(PostReactionDTO::new).toList();
     }
 
-    public Picture addPictureToPost(long postId) {
+    public Picture addPictureToPost(String username, long postId) throws UnauthorizedException {
+        if(!authorizationService.canAddPictureToPost(username, postId)) {
+            throw new UnauthorizedException("User cannot add picture to this post");
+        }
         return dbService.addPicturePost(postId);
     }
 }

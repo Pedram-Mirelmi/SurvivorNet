@@ -2,44 +2,52 @@ package se.survivor.net.services;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Picture;
-import se.survivor.net.models.User;
 
 import java.util.List;
 
 @Service
 public class UserService {
 
-    private DbService dbService;
+    private final DbService dbService;
+    private final AuthorizationService authorizationService;
 
-    public UserService(DbService dbService) {
+    public UserService(DbService dbService, AuthorizationService authorizationService) {
         this.dbService = dbService;
+        this.authorizationService = authorizationService;
     }
 
-    public UserDTO getUserById(Long userId) {
-        return new UserDTO(dbService.getUserById(userId));
-    }
-
-    public UserDTO getUserDTOById(Long userId) {
-        return new UserDTO(dbService.getUserById(userId));
-    }
-
-    public UserDTO getUserDTOByUsername(String username) {
+    public UserDTO getUserDTOByUsername(String viewerUser, String username) throws UnauthorizedException {
+        if(!authorizationService.canAccessProfile(viewerUser, username)) {
+            throw new UnauthorizedException("User cannot see the other user's information");
+        }
         return new UserDTO(dbService.getUserByUsername(username));
     }
 
-    public UserDTO getUserDTOByEmail(String email) {
-        return new UserDTO(dbService.getUserByEmail(email));
+    public UserDTO getUserDTOByEmail(String viewerUsername, String email) throws UnauthorizedException {
+        UserDTO targetUser = new UserDTO(dbService.getUserByEmail(email));
+        if(!authorizationService.canAccessProfile(viewerUsername, targetUser.getUsername())) {
+            throw new UnauthorizedException("User cannot access other user's profile information");
+        }
+        return targetUser;
     }
 
-    public List<UserDTO> getUserFollowersDTO(String username) {
+    public List<UserDTO> getUserFollowersDTO(String viewerUsername, String username) throws UnauthorizedException {
+        if(!authorizationService.canViewFollowList(viewerUsername, username)) {
+            throw new UnauthorizedException("User cannot access other user's any follow list");
+        }
         return dbService.getFollowers(username)
                 .stream()
                 .map(UserDTO::new)
                 .toList();
     }
 
-    public List<UserDTO> getUserFollowingsDTO(String username) {
+    public List<UserDTO> getUserFollowingsDTO(String viewerUsername, String username) throws UnauthorizedException {
+        if(!authorizationService.canViewFollowList(viewerUsername, username)) {
+            throw new UnauthorizedException("User cannot access other user's any follow list");
+        }
+
         return dbService.getFollowings(username)
                 .stream()
                 .map(UserDTO::new)

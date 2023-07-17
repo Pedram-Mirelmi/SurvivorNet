@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
@@ -63,29 +64,29 @@ public class PictureTests {
 
     @Test
     @Order(1)
-    void addProfilePicture() {
+    void addProfilePicture() throws UnauthorizedException {
         Picture picture = userService.addProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
         assertEquals(user.getProfilePicId(), picture.getPictureId());
     }
 
 
     @Test
     @Order(1)
-    void addBackgroundPicture() {
+    void addBackgroundPicture() throws UnauthorizedException {
         Picture picture = userService.addBackgroundProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername());
+        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
         assertEquals(user.getBackgroundPicId(), picture.getPictureId());
     }
 
 
     @Test
     @Order(2)
-    void addPostPicture() {
-        Picture picture = postService.addPictureToPost(pedramPost.getPostId());
-        PostDTO post = postService.getPostDTO(pedramPost.getPostId());
+    void addPostPicture() throws UnauthorizedException {
+        Picture picture = postService.addPictureToPost(pedramUser.getUsername(), pedramPost.getPostId());
+        PostDTO post = postService.getPostDTO(pedramUser.getUsername(), pedramPost.getPostId());
         assertEquals(1, post.getPictures().size());
         assertEquals(post.getPictures().get(0), picture.getPictureId());
     }

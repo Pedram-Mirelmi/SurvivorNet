@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.CommentDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
 import se.survivor.net.services.CommentService;
@@ -72,12 +73,12 @@ public class CommentControllerTests {
 
     @Test
     @Order(1)
-    void addAndGetComments() {
+    void addAndGetComments() throws UnauthorizedException {
         comment1 = commentService.addComment(pedramUser.getUsername(),
                 pedramPost1.getPostId(),
                 "Comment on my own post!",
                 -1L);
-        List<CommentDTO> comments = commentService.getPostComments(pedramPost1.getPostId(), 0);
+        List<CommentDTO> comments = commentService.getPostComments(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
         assertEquals(1, comments.size());
         CommentDTO comment_ = comments.get(0);
         assertEquals(comment1.getPostId(), comment_.getPostId());
@@ -87,11 +88,11 @@ public class CommentControllerTests {
 
     @Test
     @Order(1)
-    void addAndGetSolutions() {
+    void addAndGetSolutions() throws UnauthorizedException {
         solution1 = commentService.addSolution(pedramUser.getUsername(),
                 pedramPost1.getPostId(),
                 "Solution on my own post!");
-        List<CommentDTO> solutions = commentService.getPostSolutions(pedramPost1.getPostId(), 0);
+        List<CommentDTO> solutions = commentService.getPostSolutions(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
         assertEquals(1, solutions.size());
         CommentDTO solution_ = solutions.get(0);
         assertEquals(solution1.getPostId(), solution_.getPostId());
@@ -106,5 +107,4 @@ public class CommentControllerTests {
         commentService.likeComment(pedramUser.getUsername(), comment1.getCommentId(), true);
         assertEquals(1, dbService.getCommentLikes(comment1.getCommentId()));
     }
-
 }
