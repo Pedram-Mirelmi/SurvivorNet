@@ -7,14 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.PostDTO;
-import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
-import se.survivor.net.services.DbService;
-import se.survivor.net.services.PostService;
-import se.survivor.net.services.UserService;
+import se.survivor.net.services.db.PostDbService;
+import se.survivor.net.services.db.UserDbService;
+import se.survivor.net.services.domain.PictureService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,34 +23,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 public class PictureTests {
 
-    @Autowired
-    private final DbService dbService;
 
     @Autowired
-    private final UserService userService;
+    private final UserDbService userDbService;
 
     @Autowired
-    private final PostService postService;
+    private final PostDbService postDbService;
+
+    @Autowired
+    private final PictureService pictureService;
     
     private User pedramUser;
     private Post pedramPost;
 
     @Autowired
-    public PictureTests(DbService dbService, UserService userService, PostService postService) {
-        this.dbService = dbService;
-        this.userService = userService;
-        this.postService = postService;
+    public PictureTests(UserDbService userService, PostDbService postDbService, PictureService pictureService) {
+        this.userDbService = userService;
+        this.postDbService = postDbService;
+        this.pictureService = pictureService;
     }
 
     @BeforeAll
     void setUp() {
-        pedramUser = dbService.addUser("Pedram",
+        pedramUser = userDbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram");
-        pedramPost = dbService.addPost(pedramUser.getUsername(),
+        pedramPost = postDbService.addPost(pedramUser.getUsername(),
                 "Pedram's first post",
                 "Hi! I'm so excited!",
                 -1);
@@ -59,34 +59,34 @@ public class PictureTests {
 
     @AfterAll
     void tearDown() {
-        dbService.removeUser(pedramUser.getUsername());
+        userDbService.removeUser(pedramUser.getUsername());
     }
 
     @Test
     @Order(1)
-    void addProfilePicture() throws UnauthorizedException {
-        Picture picture = userService.addProfilePicture(pedramUser.getUsername());
+    void addProfilePicture() {
+        Picture picture = pictureService.addProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
-        assertEquals(user.getProfilePicId(), picture.getPictureId());
+        User user = userDbService.getUserByUsername(pedramUser.getUsername());
+        assertEquals(user.getProfilePic().getPictureId(), picture.getPictureId());
     }
 
 
     @Test
     @Order(1)
-    void addBackgroundPicture() throws UnauthorizedException {
-        Picture picture = userService.addBackgroundProfilePicture(pedramUser.getUsername());
+    void addBackgroundPicture() {
+        Picture picture = pictureService.addBackgroundProfilePicture(pedramUser.getUsername());
         assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
-        assertEquals(user.getBackgroundPicId(), picture.getPictureId());
+        User user = userDbService.getUserByUsername(pedramUser.getUsername());
+        assertEquals(user.getBackgroundPic().getPictureId(), picture.getPictureId());
     }
 
 
     @Test
     @Order(2)
     void addPostPicture() throws UnauthorizedException {
-        Picture picture = postService.addPictureToPost(pedramUser.getUsername(), pedramPost.getPostId());
-        PostDTO post = postService.getPostDTO(pedramUser.getUsername(), pedramPost.getPostId());
+        Picture picture = pictureService.addPictureToPost(pedramUser.getUsername(), pedramPost.getPostId());
+        PostDTO post = postDbService.getPostDTO(pedramPost.getPostId());
         assertEquals(1, post.getPictures().size());
         assertEquals(post.getPictures().get(0), picture.getPictureId());
     }

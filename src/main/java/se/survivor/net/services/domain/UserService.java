@@ -1,20 +1,21 @@
-package se.survivor.net.services;
+package se.survivor.net.services.domain;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.UnauthorizedException;
-import se.survivor.net.models.Picture;
+import se.survivor.net.services.AuthorizationService;
+import se.survivor.net.services.db.UserDbService;
 
 import java.util.List;
 
 @Service
 public class UserService {
 
-    private final DbService dbService;
+    private final UserDbService userDbService;
     private final AuthorizationService authorizationService;
 
-    public UserService(DbService dbService, AuthorizationService authorizationService) {
-        this.dbService = dbService;
+    public UserService(UserDbService userDbService, AuthorizationService authorizationService) {
+        this.userDbService = userDbService;
         this.authorizationService = authorizationService;
     }
 
@@ -22,11 +23,11 @@ public class UserService {
         if(!authorizationService.canAccessProfile(viewerUser, username)) {
             throw new UnauthorizedException("User cannot see the other user's information");
         }
-        return new UserDTO(dbService.getUserByUsername(username));
+        return new UserDTO(userDbService.getUserByUsername(username));
     }
 
     public UserDTO getUserDTOByEmail(String viewerUsername, String email) throws UnauthorizedException {
-        UserDTO targetUser = new UserDTO(dbService.getUserByEmail(email));
+        UserDTO targetUser = new UserDTO(userDbService.getUserByEmail(email));
         if(!authorizationService.canAccessProfile(viewerUsername, targetUser.getUsername())) {
             throw new UnauthorizedException("User cannot access other user's profile information");
         }
@@ -37,7 +38,7 @@ public class UserService {
         if(!authorizationService.canViewFollowList(viewerUsername, username)) {
             throw new UnauthorizedException("User cannot access other user's any follow list");
         }
-        return dbService.getFollowers(username)
+        return userDbService.getFollowers(username)
                 .stream()
                 .map(UserDTO::new)
                 .toList();
@@ -48,7 +49,7 @@ public class UserService {
             throw new UnauthorizedException("User cannot access other user's any follow list");
         }
 
-        return dbService.getFollowings(username)
+        return userDbService.getFollowings(username)
                 .stream()
                 .map(UserDTO::new)
                 .toList();
@@ -56,7 +57,7 @@ public class UserService {
 
     public boolean addFollow(String follower, String followee) {
         try {
-            dbService.changeFollow(follower, followee, true);
+            userDbService.changeFollow(follower, followee, true);
             return true;
         }
         catch (Exception e) {
@@ -66,7 +67,7 @@ public class UserService {
 
     public boolean removeFollow(String follower, String followee) {
         try {
-            dbService.changeFollow(follower, followee, false);
+            userDbService.changeFollow(follower, followee, false);
             return true;
         }
         catch (Exception e) {
@@ -76,7 +77,7 @@ public class UserService {
 
     public boolean addBlock(String blocker, String blockee) {
         try {
-            dbService.changeFollow(blocker, blockee, true);
+            userDbService.changeFollow(blocker, blockee, true);
             return true;
         }
         catch (Exception e) {
@@ -86,7 +87,7 @@ public class UserService {
 
     public boolean removeBlock(String blocker, String blockee) {
         try {
-            dbService.changeFollow(blocker, blockee, false);
+            userDbService.changeFollow(blocker, blockee, false);
             return true;
         }
         catch (Exception e) {
@@ -95,14 +96,6 @@ public class UserService {
     }
 
     public List<UserDTO> searchUsers(String query) {
-        return dbService.searchUsers(query).stream().map(UserDTO::new).toList();
-    }
-
-    public Picture addProfilePicture(String username) {
-        return dbService.addPictureForProfile(username);
-    }
-
-    public Picture addBackgroundProfilePicture(String username) {
-        return dbService.addBackgroundPictureForProfile(username);
+        return userDbService.searchUsers(query).stream().map(UserDTO::new).toList();
     }
 }

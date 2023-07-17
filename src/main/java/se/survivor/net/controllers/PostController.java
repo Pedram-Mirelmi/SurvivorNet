@@ -6,7 +6,7 @@ import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.exceptions.UnauthorizedException;
-import se.survivor.net.services.PostService;
+import se.survivor.net.services.domain.PostService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;

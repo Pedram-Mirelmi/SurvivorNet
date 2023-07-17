@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.CommentDTO;
 import se.survivor.net.exceptions.InvalidRequestParamsException;
 import se.survivor.net.exceptions.UnauthorizedException;
-import se.survivor.net.services.CommentService;
+import se.survivor.net.services.domain.CommentService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;

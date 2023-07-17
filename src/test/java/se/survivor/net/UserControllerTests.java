@@ -8,8 +8,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
-import se.survivor.net.services.DbService;
-import se.survivor.net.services.UserService;
+import se.survivor.net.services.db.UserDbService;
+import se.survivor.net.services.domain.UserService;
 
 import java.text.ParseException;
 
@@ -24,8 +24,9 @@ class UserControllerTests {
 
     @Autowired
     UserService userService;
+
     @Autowired
-    DbService dbService;
+    UserDbService userDbService;
 
 
     private User pedramUser;
@@ -39,20 +40,20 @@ class UserControllerTests {
     @AfterAll
     void tearDown() throws ParseException {
         System.out.println("tearing down! =======================================================================================");
-        dbService.removeUser(pedramUser.getUsername());
-        dbService.removeUser(minaUser.getUsername());
+        userDbService.removeUser(pedramUser.getUsername());
+        userDbService.removeUser(minaUser.getUsername());
     }
 
     @BeforeAll
     void setUp() throws ParseException {
-        pedramUser = dbService.addUser("Pedram",
+        pedramUser = userDbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram!");
 
-        minaUser = dbService.addUser("Mina",
+        minaUser = userDbService.addUser("Mina",
                 "mina",
                 "123",
                 "mina.ilkhani00@gmail.com",
@@ -81,7 +82,7 @@ class UserControllerTests {
     @Test
     @Order(1)
     void testAuthenticateWithUserPass() {
-        assertTrue(dbService.authenticate(pedramUser.getUsername(), pedramUser.getPassword()));
+        assertTrue(userDbService.authenticateByPassword(pedramUser.getUsername(), pedramUser.getPassword()));
     }
 
     @Test

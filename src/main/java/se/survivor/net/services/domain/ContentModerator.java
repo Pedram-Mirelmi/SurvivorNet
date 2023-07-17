@@ -1,4 +1,4 @@
-package se.survivor.net.services;
+package se.survivor.net.services.domain;
 
 import org.springframework.stereotype.Service;
 
