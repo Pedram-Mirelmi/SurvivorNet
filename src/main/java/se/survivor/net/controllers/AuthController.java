@@ -10,7 +10,7 @@ import se.survivor.net.exceptions.InvalidRequestParamsException;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
 
-import se.survivor.net.services.DbService;
+import se.survivor.net.services.db.UserDbService;
 import se.survivor.net.utils.JWTUtility;
 import se.survivor.net.utils.Secret;
 
@@ -30,13 +30,13 @@ import static se.survivor.net.utils.Constants.*;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-    private final DbService dbService;
+    private final UserDbService userDbService;
 
-    public AuthController(DbService dbService) {
-        this.dbService = dbService;
+    public AuthController(UserDbService userDbService) {
+        this.userDbService = userDbService;
     }
 
-    @PostMapping("/oath/github")
+    @PostMapping("oath/github")
     public Map<String, String> oauthWithGithub(@RequestParam("code") String code) throws IOException, ParseException {
 
         String githubUserToken = getUserTokenFromGithub(code);
@@ -44,28 +44,28 @@ public class AuthController {
         String username = userInfo.get("login").getAsString();
         String email = userInfo.get("email").getAsString();
         try {
-            User user = dbService.getUserByEmail(email);
+            User user = userDbService.getUserByEmail(email);
         } catch (InvalidIdException e) { // new User
-            dbService.addUser(username, username, null, email, null, "");
+            userDbService.addUser(username, username, null, email, null, "");
         }
         return Map.of(STATUS, SUCCESS,
                 AUTHORIZATION, JWTUtility.generateToken(username),
                 USERNAME, username);
     }
 
-    @GetMapping("/api/logout")
+    @GetMapping("logout")
     public Map<String, String> logout(@RequestHeader(AUTHORIZATION) String authToken) {
         return Map.of(STATUS, SUCCESS);
     }
 
-    @PostMapping("/api/login")
+    @PostMapping("login")
     public Map<String, String> login(@RequestBody Map<String, String> body) throws NoSuchAlgorithmException, UnauthorizedException {
         String username = body.get("username");
         String password = body.get("password");
         if (username == null || password == null) {
             throw new UnauthorizedException("Empty username or password");
         }
-        if (dbService.authenticate(username, password)) {
+        if (userDbService.authenticateByPassword(username, password)) {
             var authToken = JWTUtility.generateToken(username);
             return Map.of(AUTHORIZATION, authToken,
                     STATUS, SUCCESS);
@@ -73,7 +73,7 @@ public class AuthController {
         throw new UnauthorizedException("Username or password was wrong");
     }
 
-    @PostMapping("/api/register")
+    @PostMapping("register")
     public Map<String, String> register(@RequestBody Map<String, String> body) throws InvalidRequestParamsException {
         try {
             String username = Objects.requireNonNull(body.get(USERNAME));
@@ -82,7 +82,7 @@ public class AuthController {
             String email = Objects.requireNonNull(body.get(EMAIL));
             Date birthDate = Date.valueOf(body.get(BIRTHDATE));
 
-            dbService.addUser(username, name, password, email, birthDate, "");
+            userDbService.addUser(username, name, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
             return Map.of(STATUS, SUCCESS,
                     AUTHORIZATION, authToken);

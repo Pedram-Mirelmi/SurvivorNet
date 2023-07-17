@@ -5,7 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
-import se.survivor.net.services.PostService;
+import se.survivor.net.exceptions.UnauthorizedException;
+import se.survivor.net.services.domain.PostService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
@@ -15,10 +16,10 @@ import java.util.Objects;
 import static se.survivor.net.utils.Constants.*;
 
 @RestController
-@RequestMapping("/api/posts/") // www.survivor-net.com/api/posts/******
+@RequestMapping("api/posts")
 public class PostController {
 
-    private PostService postService;
+    private final PostService postService;
 
     PostController(PostService postService) {
         this.postService = postService;
@@ -34,11 +35,13 @@ public class PostController {
 
     @GetMapping("{postId}")
     public PostDTO getPostDTO(
-            @PathVariable(POST_ID) long postId) {
-        return postService.getPostDTO(postId);
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(POST_ID) long postId) throws UnauthorizedException {
+        return postService.getPostDTO(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                postId);
     }
 
-    // www.survivor-net.com/api/posts/
     @PostMapping("")
     public Map<String, String> addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,
@@ -59,11 +62,11 @@ public class PostController {
     }
 
 
-    @PostMapping("/posts/{postId}/reactions")
+    @PostMapping("{postId}/reactions")
     public Map<String, Object> addReaction(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(POST_ID) long postId,
-            @RequestParam(REACTION_TYPE) int reactionType) {
+            @RequestParam(REACTION_TYPE) int reactionType) throws UnauthorizedException {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         postService.addReaction(username, postId, reactionType);
         return Map.of(
@@ -71,10 +74,13 @@ public class PostController {
         );
     }
 
-    @GetMapping("/posts/{postId}/reactions")
+    @GetMapping("{postId}/reactions")
     public List<PostReactionDTO> getPostReactions(
-            @PathVariable(POST_ID) long postId) {
-        return postService.getReactions(postId);
+            @RequestHeader(AUTHORIZATION) String jwtToken,
+            @PathVariable(POST_ID) long postId) throws UnauthorizedException {
+        return postService.getReactions(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                postId);
     }
 
 }

@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.CommentDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
-import se.survivor.net.services.CommentService;
-import se.survivor.net.services.DbService;
+import se.survivor.net.services.db.CommentDbService;
+import se.survivor.net.services.db.PostDbService;
+import se.survivor.net.services.db.UserDbService;
+import se.survivor.net.services.domain.CommentService;
 
 import java.util.List;
 
@@ -23,10 +26,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CommentControllerTests {
 
     @Autowired
-    private final CommentService commentService;
+    private final CommentDbService commentDbService;
 
     @Autowired
-    private final DbService dbService;
+    private final PostDbService postDbService;
+
+    @Autowired
+    private final UserDbService userDbService;
+
+    @Autowired
+    private final CommentService commentService;
 
     private User pedramUser;
     private User minaUser;
@@ -38,27 +47,29 @@ public class CommentControllerTests {
     private CommentDTO solution1;
 
     @Autowired
-    public CommentControllerTests(DbService dbService, CommentService commentService) {
-        this.dbService = dbService;
+    public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService) {
+        this.commentDbService = commentDbService;
+        this.userDbService = userDbService;
         this.commentService = commentService;
+        this.postDbService = postDbService;
     }
 
     @BeforeAll
     void setUp() {
-        pedramUser = dbService.addUser("Pedram",
+        pedramUser = userDbService.addUser("Pedram",
                 "pedram",
                 "123",
                 "mirelmipedram@gmail.com",
                 null,
                 "This is Pedram");
-        minaUser = dbService.addUser("Mina",
+        minaUser = userDbService.addUser("Mina",
                 "mina",
                 "123",
                 "minaIlkhani00@gmail.com",
                 null,
                 "This is Mina");
 
-        pedramPost1 = dbService.addPost(pedramUser.getUsername(),
+        pedramPost1 = postDbService.addPost(pedramUser.getUsername(),
                 "Pedram's first post",
                 "Hi! I'm so excited!",
                 -1);
@@ -66,18 +77,18 @@ public class CommentControllerTests {
 
     @AfterAll
     void tearDown() {
-        dbService.removeUser("Pedram");
-        dbService.removeUser(minaUser.getUsername());
+        userDbService.removeUser("Pedram");
+        userDbService.removeUser(minaUser.getUsername());
     }
 
     @Test
     @Order(1)
-    void addAndGetComments() {
+    void addAndGetComments() throws UnauthorizedException {
         comment1 = commentService.addComment(pedramUser.getUsername(),
                 pedramPost1.getPostId(),
                 "Comment on my own post!",
                 -1L);
-        List<CommentDTO> comments = commentService.getPostComments(pedramPost1.getPostId(), 0);
+        List<CommentDTO> comments = commentService.getPostComments(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
         assertEquals(1, comments.size());
         CommentDTO comment_ = comments.get(0);
         assertEquals(comment1.getPostId(), comment_.getPostId());
@@ -87,11 +98,11 @@ public class CommentControllerTests {
 
     @Test
     @Order(1)
-    void addAndGetSolutions() {
+    void addAndGetSolutions() throws UnauthorizedException {
         solution1 = commentService.addSolution(pedramUser.getUsername(),
                 pedramPost1.getPostId(),
                 "Solution on my own post!");
-        List<CommentDTO> solutions = commentService.getPostSolutions(pedramPost1.getPostId(), 0);
+        List<CommentDTO> solutions = commentService.getPostSolutions(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
         assertEquals(1, solutions.size());
         CommentDTO solution_ = solutions.get(0);
         assertEquals(solution1.getPostId(), solution_.getPostId());
@@ -102,9 +113,8 @@ public class CommentControllerTests {
     @Test
     @Order(2)
     void likeComment() {
-        assertEquals(0, dbService.getCommentLikes(comment1.getCommentId()));
+        assertEquals(0, commentDbService.getCommentLikes(comment1.getCommentId()));
         commentService.likeComment(pedramUser.getUsername(), comment1.getCommentId(), true);
-        assertEquals(1, dbService.getCommentLikes(comment1.getCommentId()));
+        assertEquals(1, commentDbService.getCommentLikes(comment1.getCommentId()));
     }
-
 }

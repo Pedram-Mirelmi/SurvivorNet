@@ -4,7 +4,7 @@ package se.survivor.net.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(schema = "public")
+@Table(name = "commentLikes", schema = "public")
 public class CommentLike {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
