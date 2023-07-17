@@ -91,4 +91,17 @@ public class AuthorizationService {
     public boolean canViewPostComments(String viewerUsername, long postId) {
         return canViewPost(viewerUsername, postId);
     }
+
+    public boolean canAddPictureToPost(String username, long postId) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        boolean access = dbService.getPostById(postId, entityManager)
+                .getUser().getUsername().equals(username);
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        return access;
+    }
 }

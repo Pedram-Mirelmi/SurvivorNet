@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
@@ -83,9 +84,9 @@ public class PictureTests {
 
     @Test
     @Order(2)
-    void addPostPicture() {
-        Picture picture = postService.addPictureToPost(pedramPost.getPostId());
-        PostDTO post = postService.getPostDTO(pedramPost.getPostId());
+    void addPostPicture() throws UnauthorizedException {
+        Picture picture = postService.addPictureToPost(pedramUser.getUsername(), pedramPost.getPostId());
+        PostDTO post = postService.getPostDTO(pedramUser.getUsername(), pedramPost.getPostId());
         assertEquals(1, post.getPictures().size());
         assertEquals(post.getPictures().get(0), picture.getPictureId());
     }

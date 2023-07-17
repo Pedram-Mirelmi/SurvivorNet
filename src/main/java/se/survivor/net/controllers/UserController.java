@@ -1,17 +1,17 @@
 package se.survivor.net.controllers;
 
-import static se.survivor.net.utils.Constants.*;
-
 import org.springframework.web.bind.annotation.*;
-import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidValueException;
+import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.services.PostService;
 import se.survivor.net.services.UserService;
 import se.survivor.net.utils.JWTUtility;
 
 import java.util.List;
 import java.util.Map;
+
+import static se.survivor.net.utils.Constants.*;
 
 @RestController
 public class UserController {
@@ -36,9 +36,12 @@ public class UserController {
     public Map<String, Object> getUserProfile(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username,
-            @RequestParam int chunk) throws InvalidValueException {
+            @RequestParam int chunk) throws InvalidValueException, UnauthorizedException {
         return Map.of(USER, userService.getUserDTOByUsername(username),
-                POSTS, postService.getUserPosts(username, chunk));
+                POSTS, postService.getUserPosts(
+                        JWTUtility.getUsernameFromToken(jwtToken),
+                        username,
+                        chunk));
     }
 
     @GetMapping("api/users/{username}/followers")
