@@ -1,4 +1,4 @@
-package se.survivor.net.services;
+package se.survivor.net.services.domain;
 
 public interface IContentModerator {
     boolean isValidPostTitle(String postTitle);

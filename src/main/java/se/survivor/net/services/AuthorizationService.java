@@ -7,16 +7,20 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.stereotype.Service;
 import se.survivor.net.models.Post;
 import se.survivor.net.models.User;
+import se.survivor.net.services.db.PostDbService;
+import se.survivor.net.services.db.UserDbService;
 
 @Service
 public class AuthorizationService {
 
     private final EntityManagerFactory entityManagerFactory;
 
-    private final DbService dbService;
+    private final UserDbService userDbService;
+    private final PostDbService postDbService;
 
-    public AuthorizationService(DbService dbService) {
-        this.dbService = dbService;
+    public AuthorizationService(UserDbService userDbService, PostDbService postDbService) {
+        this.userDbService = userDbService;
+        this.postDbService = postDbService;
         var registry = new StandardServiceRegistryBuilder().configure().build();
         entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
@@ -59,8 +63,8 @@ public class AuthorizationService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        Post post = dbService.getPostById(postId, entityManager);
-        User targetUser = dbService.getUserById(post.getUser().getUserId(), entityManager);
+        Post post = postDbService.getPostById(postId, entityManager);
+        User targetUser = userDbService.getUserById(post.getUser().getUserId(), entityManager);
         boolean access = canAccessProfile(viewerUsername, targetUser.getUsername(), entityManager);
         entityManager.getTransaction().commit();
         entityManager.close();
@@ -96,7 +100,7 @@ public class AuthorizationService {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
 
-        boolean access = dbService.getPostById(postId, entityManager)
+        boolean access = postDbService.getPostById(postId, entityManager)
                 .getUser().getUsername().equals(username);
 
         entityManager.getTransaction().commit();

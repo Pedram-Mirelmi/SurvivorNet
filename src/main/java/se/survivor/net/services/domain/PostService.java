@@ -1,23 +1,24 @@
-package se.survivor.net.services;
+package se.survivor.net.services.domain;
 
 import org.springframework.stereotype.Service;
 import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.PostReactionDTO;
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.exceptions.UnauthorizedException;
-import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
+import se.survivor.net.services.AuthorizationService;
+import se.survivor.net.services.db.PostDbService;
 
 import java.util.List;
 
 @Service
 public class PostService {
 
-    private final DbService dbService;
+    private final PostDbService postDbService;
     private final AuthorizationService authorizationService;
 
-    public PostService(DbService dbService, AuthorizationService authorizationService) {
-        this.dbService = dbService;
+    public PostService(PostDbService postDbService, AuthorizationService authorizationService) {
+        this.postDbService = postDbService;
         this.authorizationService = authorizationService;
     }
 
@@ -25,12 +26,12 @@ public class PostService {
         if (chunk < 0) {
             throw new InvalidValueException("Invalid negative chunk value");
         }
-        List<Post> posts = dbService.getUserHomePosts(username, chunk);
+        List<Post> posts = postDbService.getUserHomePosts(username, chunk);
         return posts.stream().map(
                 p -> new PostDTO(
                         p,
-                        dbService.getPostCommentCount(p.getPostId()),
-                        dbService.getPostReactionCount(p.getPostId()),
+                        postDbService.getPostCommentCount(p.getPostId()),
+                        postDbService.getPostReactionCount(p.getPostId()),
                         p.getParent() == null ? -1 : p.getParent().getPostId())
         ).toList();
     }
@@ -39,12 +40,12 @@ public class PostService {
         if(!authorizationService.canViewPost(username, postId)) {
             throw new UnauthorizedException("User cannot view this post");
         }
-        return dbService.getPostDTO(postId);
+        return postDbService.getPostDTO(postId);
     }
 
 
     public PostDTO addPost(String username, String title, String caption, long parentId) {
-        Post post = dbService.addPost(username, title, caption, parentId);
+        Post post = postDbService.addPost(username, title, caption, parentId);
         return new PostDTO(post,
                 0,
                 0,
@@ -58,11 +59,11 @@ public class PostService {
         if(!authorizationService.canAccessProfile(viewerUsername, underViewUsername)) {
             throw new UnauthorizedException("User cannot access this user!");
         }
-        return dbService.getUserPosts(underViewUsername, chunk)
+        return postDbService.getUserPosts(underViewUsername, chunk)
                 .stream()
                 .map(p -> new PostDTO(p,
-                        dbService.getPostCommentCount(p.getPostId()),
-                        dbService.getPostReactionCount(p.getPostId()),
+                        postDbService.getPostCommentCount(p.getPostId()),
+                        postDbService.getPostReactionCount(p.getPostId()),
                         p.getParent() == null ? -1 : p.getParent().getPostId()
                 )).toList();
     }
@@ -71,22 +72,15 @@ public class PostService {
         if(!authorizationService.canAddReaction(username, postId)) {
             throw new UnauthorizedException("User cannot add reaction to this post");
         }
-        dbService.addReaction(username, postId, reactionType);
+        postDbService.addPostReaction(username, postId, reactionType);
     }
 
     public List<PostReactionDTO> getReactions(String username, long postId) throws UnauthorizedException {
         if(!authorizationService.canViewPostReactions(username, postId)) {
             throw new UnauthorizedException("User cannot view this post's reactions");
         }
-        return dbService.getPostReactions(postId).
+        return postDbService.getPostReactions(postId).
                 stream().
                 map(PostReactionDTO::new).toList();
-    }
-
-    public Picture addPictureToPost(String username, long postId) throws UnauthorizedException {
-        if(!authorizationService.canAddPictureToPost(username, postId)) {
-            throw new UnauthorizedException("User cannot add picture to this post");
-        }
-        return dbService.addPicturePost(postId);
     }
 }
