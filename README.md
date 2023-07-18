@@ -52,7 +52,7 @@ There is a growing demand for platforms that promote mental health and well-bein
 
 # what's up in the next releases?
 We are still working on this project. It's the primary version and does not even have a front end! Some features are coming soon in the next releases:
-- frontend based on the figma(لینکش رو بذار)
+- frontend based on the [figma](https://www.figma.com/file/6w00pRiOJbXUvhRx4x3NXA/Project-(Copy)?type=design&node-id=5-385&mode=design&t=gvMPSm4oSBUSnicY-0)
 - password recovery
 - sending verification code
 - change password
@@ -63,7 +63,7 @@ We are still working on this project. It's the primary version and does not even
 - trending
 - FQA
 - reporting technical issues
-see the preview here(دوباره لینک figma)
+see the preview [here](https://www.figma.com/file/6w00pRiOJbXUvhRx4x3NXA/Project-(Copy)?type=design&node-id=5-385&mode=design&t=gvMPSm4oSBUSnicY-0)
 
 # What we passed during designing and developing...
 Survivor Network's starting point is a software engineering course project as a new idea for improving human life quality. Every rule of software engineering is obeyed.
@@ -72,8 +72,12 @@ Survivor Network's starting point is a software engineering course project as a 
 - We had analysed it by drawing [**activity diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/ActivityDiagram.png) and [**use case diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/UseCaseDiagram.png)
 
 
+<br />
+<br />
+
+
 <div style="display:flex">
-    <figcaption>Use Case Diagram 
+    <figcaption>Use Case Diagram:
     <br>
     <img src="./img/UseCaseDiagram.png" alt="Image 1" style="width:90%;">
 </div>
@@ -83,8 +87,10 @@ Survivor Network's starting point is a software engineering course project as a 
 <br />
 <br />
 
-- We have designed [**class diagram1**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/ClassDiagramObjects.png), [**class diagram2**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/ClassDiagramsServicesandController.png), and [**sequence diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/SequenceDiagram.png) too.
-\
+- We have designed [**services class diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/ClassDiagramObjects.png), [**entities class diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/ClassDiagramsServicesandController.png), and [**sequence diagram**](https://github.com/Pedram-Mirelmi/SurvivorNet/blob/feature/README/img/SequenceDiagram.png) too.
+
+<br />
+
 **Tip:** The diagrams are not 100% compatible with the implementation just like any other software engineering project.
 
 
@@ -151,6 +157,9 @@ At the end whenever the project reached an acceptable and stable version we merg
 <center>
 
 ![](./img/git-history.png)
+
+<br />
+
 history of the `main` branch
 </center>
 
