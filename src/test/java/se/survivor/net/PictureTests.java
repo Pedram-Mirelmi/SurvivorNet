@@ -32,8 +32,8 @@ public class PictureTests {
     @Autowired
     private final PictureDbService pictureDbService;
     
-    private User pedramUser;
-    private Post pedramPost;
+    private User integrationTestUser1;
+    private Post integrationUser1Post1;
 
     @Autowired
     public PictureTests(UserDbService userService, PostDbService postDbService, PictureDbService pictureDbService) {
@@ -44,29 +44,29 @@ public class PictureTests {
 
     @BeforeAll
     void setUp() {
-        pedramUser = userDbService.addUser("Pedram",
-                "pedram",
-                "123",
-                "mirelmipedram@gmail.com",
+        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+                "integrationTestUser1Name",
+                "integrationTestUser1Pass",
+                "integrationTestUser1Email@SurvivorNet.com",
                 null,
-                "This is Pedram");
-        pedramPost = postDbService.addPost(pedramUser.getUsername(),
-                "Pedram's first post",
-                "Hi! I'm so excited!",
+                "This is integrationTestUser1");
+        integrationUser1Post1 = postDbService.addPost(integrationTestUser1.getUsername(),
+                "integrationTestUser1's first post' title",
+                "integrationTestUser1's first post'",
                 -1);
     }
 
     @AfterAll
     void tearDown() {
-        userDbService.removeUser(pedramUser.getUsername());
+        userDbService.removeUser(integrationTestUser1.getUsername());
     }
 
     @Test
     @Order(1)
     void addProfilePicture() {
-        Picture picture = pictureDbService.addPictureForProfile(pedramUser.getUsername());
-        assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        User user = userDbService.getUserByUsername(pedramUser.getUsername());
+        Picture picture = pictureDbService.addPictureForProfile(integrationTestUser1.getUsername());
+        assertEquals(integrationTestUser1.getUsername(), picture.getOwner().getUsername());
+        User user = userDbService.getUserByUsername(integrationTestUser1.getUsername());
         assertEquals(user.getProfilePic().getPictureId(), picture.getPictureId());
     }
 
@@ -74,9 +74,9 @@ public class PictureTests {
     @Test
     @Order(1)
     void addBackgroundPicture() {
-        Picture picture = pictureDbService.addBackgroundPictureForProfile(pedramUser.getUsername());
-        assertEquals(pedramUser.getUsername(), picture.getOwner().getUsername());
-        User user = userDbService.getUserByUsername(pedramUser.getUsername());
+        Picture picture = pictureDbService.addBackgroundPictureForProfile(integrationTestUser1.getUsername());
+        assertEquals(integrationTestUser1.getUsername(), picture.getOwner().getUsername());
+        User user = userDbService.getUserByUsername(integrationTestUser1.getUsername());
         assertEquals(user.getBackgroundPic().getPictureId(), picture.getPictureId());
     }
 
@@ -84,8 +84,8 @@ public class PictureTests {
     @Test
     @Order(2)
     void addPostPicture() {
-        Picture picture = pictureDbService.addPicturePost(pedramPost.getPostId());
-        PostDTO post = postDbService.getPostDTO(pedramPost.getPostId());
+        Picture picture = pictureDbService.addPicturePost(integrationUser1Post1.getPostId());
+        PostDTO post = postDbService.getPostDTO(integrationUser1Post1.getPostId());
         assertEquals(1, post.getPictures().size());
         assertEquals(post.getPictures().get(0), picture.getPictureId());
     }

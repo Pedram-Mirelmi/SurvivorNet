@@ -29,8 +29,8 @@ class UserControllerTests {
     UserDbService userDbService;
 
 
-    private User pedramUser;
-    private User minaUser;
+    private User integrationTestUser1;
+    private User integrationTestUser2;
 
     @Autowired
     public UserControllerTests(UserService userService) {
@@ -40,79 +40,78 @@ class UserControllerTests {
     @AfterAll
     void tearDown() throws ParseException {
         System.out.println("tearing down! =======================================================================================");
-        userDbService.removeUser(pedramUser.getUsername());
-        userDbService.removeUser(minaUser.getUsername());
+        userDbService.removeUser(integrationTestUser1.getUsername());
+        userDbService.removeUser(integrationTestUser2.getUsername());
     }
 
     @BeforeAll
     void setUp() throws ParseException {
-        pedramUser = userDbService.addUser("Pedram",
-                "pedram",
-                "123",
-                "mirelmipedram@gmail.com",
+        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+                "integrationTestUser1Name",
+                "integrationTestUser1Pass",
+                "integrationTestUser1Email@SurvivorNet.com",
                 null,
-                "This is Pedram!");
-
-        minaUser = userDbService.addUser("Mina",
-                "mina",
-                "123",
-                "mina.ilkhani00@gmail.com",
+                "This is bio of integrationTestUser1");
+        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+                "integrationTestUser2Name",
+                "integrationTestUser2Pass",
+                "integrationTestUser2Email@SurvivorNet.com",
                 null,
-                "This is Mina!");
+                "This is bio of integrationTestUser2");
     }
 
     @Test
 	@Order(1)
 	void testGetUserByUsername() throws UnauthorizedException {
-    	UserDTO user = userService.getUserDTOByUsername(pedramUser.getUsername(), pedramUser.getUsername());
-        assertEquals(pedramUser.getUsername(), user.getUsername());
-        assertEquals(pedramUser.getName(), user.getName());
+    	UserDTO user = userService.getUserDTOByUsername(integrationTestUser1.getUsername(), integrationTestUser1.getUsername());
+        assertEquals(integrationTestUser1.getUsername(), user.getUsername());
+        assertEquals(integrationTestUser1.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
 	}
 
 	@Test
     @Order(1)
     void testGetUsernameByEmail() throws UnauthorizedException {
-        UserDTO user = userService.getUserDTOByEmail(pedramUser.getEmail(), "mirelmipedram@gmail.com");
-        assertEquals(pedramUser.getUsername(), user.getUsername());
-        assertEquals(pedramUser.getName(), user.getName());
+        UserDTO user = userService.getUserDTOByEmail(integrationTestUser1.getEmail(), integrationTestUser1.getEmail());
+        assertEquals(integrationTestUser1.getUsername(), user.getUsername());
+        assertEquals(integrationTestUser1.getName(), user.getName());
         assertTrue(user.getBio().isEmpty());
     }
 
     @Test
     @Order(1)
     void testAuthenticateWithUserPass() {
-        assertTrue(userDbService.authenticateByPassword(pedramUser.getUsername(), pedramUser.getPassword()));
+        assertTrue(userDbService.authenticateByPassword(integrationTestUser1.getUsername(), integrationTestUser1.getPassword()));
     }
 
     @Test
     @Order(2)
     void addFollowing() {
-        userService.addFollow(pedramUser.getUsername(), minaUser.getUsername());
+        userService.addFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
     }
 
     @Test
     @Order(3)
     void testFollowingsAfterFollow() throws UnauthorizedException {
-        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername(), pedramUser.getUsername() );
+        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername() );
         assertEquals(1, followings.size());
         UserDTO user = followings.get(0);
-        assertEquals(minaUser.getUsername(), user.getUsername());
+        assertEquals(integrationTestUser2.getUsername(), user.getUsername());
     }
 
     @Test
     @Order(3)
     void testFollowersAfterFollow() throws UnauthorizedException {
-        var followers = userService.getUserFollowersDTO(minaUser.getUsername(), minaUser.getUsername());
+        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername());
         assertEquals(1, followers.size());
         UserDTO user = followers.get(0);
-        assertEquals(pedramUser.getUsername(), user.getUsername());
+        assertEquals(integrationTestUser1.getUsername(), user.getUsername());
     }
 
     @Test
     @Order(4)
     void testRemoveFollow() {
-        userService.removeFollow(pedramUser.getUsername(), minaUser.getUsername());
+        userService.removeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
     }
 
 
@@ -120,14 +119,14 @@ class UserControllerTests {
     @Test
     @Order(5)
     void testFollowingsAfterUnfollow() throws UnauthorizedException {
-        var followings = userService.getUserFollowingsDTO(pedramUser.getUsername(), pedramUser.getUsername() );
+        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername() );
         assertEquals(0, followings.size());
     }
 
     @Test
     @Order(5)
     void testFollowersAfterUnfollow() throws UnauthorizedException {
-        var followers = userService.getUserFollowersDTO(minaUser.getUsername(), minaUser.getUsername());
+        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername());
         assertEquals(0, followers.size());
     }
 }

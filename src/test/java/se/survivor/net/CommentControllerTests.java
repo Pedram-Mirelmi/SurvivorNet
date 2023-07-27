@@ -37,10 +37,10 @@ public class CommentControllerTests {
     @Autowired
     private final CommentService commentService;
 
-    private User pedramUser;
-    private User minaUser;
+    private User integrationTestUser1;
+    private User integrationTestUser2;
 
-    private Post pedramPost1;
+    private Post integrationUser1Post1;
 
     private CommentDTO comment1;
 
@@ -56,39 +56,39 @@ public class CommentControllerTests {
 
     @BeforeAll
     void setUp() {
-        pedramUser = userDbService.addUser("Pedram",
-                "pedram",
-                "123",
-                "mirelmipedram@gmail.com",
+        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+                "integrationTestUser1Name",
+                "integrationTestUser1Pass",
+                "integrationTestUser1Email@SurvivorNet.com",
                 null,
-                "This is Pedram");
-        minaUser = userDbService.addUser("Mina",
-                "mina",
-                "123",
-                "minaIlkhani00@gmail.com",
+                "This is integrationTestUser1");
+        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+                "integrationTestUser2Name",
+                "integrationTestUser2Pass",
+                "integrationTestUser2Email@SurvivorNet.com",
                 null,
-                "This is Mina");
+                "This is integrationTestUser2");
 
-        pedramPost1 = postDbService.addPost(pedramUser.getUsername(),
-                "Pedram's first post",
-                "Hi! I'm so excited!",
+        integrationUser1Post1 = postDbService.addPost(integrationTestUser1.getUsername(),
+                "integrationTestUser1's first post' title",
+                "integrationTestUser1's first post'",
                 -1);
     }
 
     @AfterAll
     void tearDown() {
-        userDbService.removeUser("Pedram");
-        userDbService.removeUser(minaUser.getUsername());
+        userDbService.removeUser(integrationTestUser1.getUsername());
+        userDbService.removeUser(integrationTestUser2.getUsername());
     }
 
     @Test
     @Order(1)
     void addAndGetComments() throws UnauthorizedException {
-        comment1 = commentService.addComment(pedramUser.getUsername(),
-                pedramPost1.getPostId(),
-                "Comment on my own post!",
+        comment1 = commentService.addComment(integrationTestUser1.getUsername(),
+                integrationUser1Post1.getPostId(),
+                "IntegrationTestComment1's text",
                 -1L);
-        List<CommentDTO> comments = commentService.getPostComments(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
+        List<CommentDTO> comments = commentService.getPostComments(integrationTestUser1.getUsername(), integrationUser1Post1.getPostId(), 0);
         assertEquals(1, comments.size());
         CommentDTO comment_ = comments.get(0);
         assertEquals(comment1.getPostId(), comment_.getPostId());
@@ -99,10 +99,10 @@ public class CommentControllerTests {
     @Test
     @Order(1)
     void addAndGetSolutions() throws UnauthorizedException {
-        solution1 = commentService.addSolution(pedramUser.getUsername(),
-                pedramPost1.getPostId(),
-                "Solution on my own post!");
-        List<CommentDTO> solutions = commentService.getPostSolutions(pedramUser.getUsername(), pedramPost1.getPostId(), 0);
+        solution1 = commentService.addSolution(integrationTestUser1.getUsername(),
+                integrationUser1Post1.getPostId(),
+                "IntegrationTestSolution1's text");
+        List<CommentDTO> solutions = commentService.getPostSolutions(integrationTestUser1.getUsername(), integrationUser1Post1.getPostId(), 0);
         assertEquals(1, solutions.size());
         CommentDTO solution_ = solutions.get(0);
         assertEquals(solution1.getPostId(), solution_.getPostId());
@@ -114,7 +114,7 @@ public class CommentControllerTests {
     @Order(2)
     void likeComment() {
         assertEquals(0, commentDbService.getCommentLikes(comment1.getCommentId()));
-        commentService.likeComment(pedramUser.getUsername(), comment1.getCommentId(), true);
+        commentService.likeComment(integrationTestUser1.getUsername(), comment1.getCommentId(), true);
         assertEquals(1, commentDbService.getCommentLikes(comment1.getCommentId()));
     }
 }
