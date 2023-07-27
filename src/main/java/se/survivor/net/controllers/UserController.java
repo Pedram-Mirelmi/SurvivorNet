@@ -1,6 +1,7 @@
 package se.survivor.net.controllers;
 
 import org.springframework.web.bind.annotation.*;
+import se.survivor.net.DTO.PostDTO;
 import se.survivor.net.DTO.UserDTO;
 import se.survivor.net.exceptions.InvalidValueException;
 import se.survivor.net.exceptions.UnauthorizedException;
@@ -35,43 +36,36 @@ public class UserController {
                 username);
     }
 
-    @GetMapping("{username}/profile")
-    public Map<String, Object> getUserProfile(
+    @GetMapping("{username}/posts")
+    public List<PostDTO> getUserProfile(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @PathVariable(USERNAME) String username,
-            @RequestParam int chunk) throws InvalidValueException, UnauthorizedException {
-        return Map.of(
-                USER,
-                userService.getUserDTOByUsername(JWTUtility.getUsernameFromToken(jwtToken),
-                                                            username),
-                POSTS,
-                postService.getUserPosts(
-                        JWTUtility.getUsernameFromToken(jwtToken),
-                        username,
-                        chunk));
+            @RequestParam(CHUNK) int chunk) throws InvalidValueException, UnauthorizedException {
+        return postService.getUserPosts(
+            JWTUtility.getUsernameFromToken(jwtToken),
+            username,
+            chunk);
     }
 
     @GetMapping("{username}/followers")
-    public Map<String, Object> getUserFollowers(
+    public List<UserDTO> getUserFollowers(
             @RequestHeader(AUTHORIZATION) String jwtToken,
-            @PathVariable(USERNAME) String username) throws UnauthorizedException {
-        return Map.of(USER, userService.getUserDTOByUsername(
-                    JWTUtility.getUsernameFromToken(jwtToken),
-                    username),
-                FOLLOWERS,
-                userService.getUserFollowersDTO(
-                        JWTUtility.getUsernameFromToken(jwtToken),
-                        username));
+            @PathVariable(USERNAME) String username,
+            @RequestParam(CHUNK) int chunk) throws UnauthorizedException {
+        return userService.getUserFollowersDTO(
+            JWTUtility.getUsernameFromToken(jwtToken),
+            username, chunk);
     }
 
     @GetMapping("{username}/followings")
-    public Map<String, Object> getUserFollowings(
+    public List<UserDTO> getUserFollowings(
             @RequestHeader(AUTHORIZATION) String jwtToken,
-            @PathVariable(USERNAME) String username) throws UnauthorizedException {
-        return Map.of(USERNAME, username,
-                FOLLOWINGS, userService.getUserFollowingsDTO(
-                        JWTUtility.getUsernameFromToken(jwtToken),
-                        username));
+            @PathVariable(USERNAME) String username,
+            @RequestParam(CHUNK) int chunk) throws UnauthorizedException {
+        return userService.getUserFollowingsDTO(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                username,
+                chunk);
     }
 
     @PostMapping("follow/{username}")
@@ -106,7 +100,8 @@ public class UserController {
         return Map.of(STATUS, success ? SUCCESS : FAIL);
     }
     @GetMapping("search")
-    public List<UserDTO> searchUsers(@RequestParam(QUERY) String query) {
-        return userService.searchUsers(query);
+    public List<UserDTO> searchUsers(@RequestParam(QUERY) String query,
+                                     @RequestParam(CHUNK) int chunk) {
+        return userService.searchUsers(query, chunk);
     }
 }

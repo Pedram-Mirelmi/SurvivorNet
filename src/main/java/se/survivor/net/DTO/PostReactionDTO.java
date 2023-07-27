@@ -14,7 +14,7 @@ public class PostReactionDTO {
     }
 
     public PostReactionDTO(PostReaction postReaction) {
-        this.user = new UserDTO(postReaction.getUser());
+        this.user = new UserDTO(postReaction.getUser(), 0, 0);
         this.postId = postReaction.getPost().getPostId();
         this.reactionType = postReaction.getReactionType();
     }

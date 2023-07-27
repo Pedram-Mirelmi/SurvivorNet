@@ -9,7 +9,6 @@ import se.survivor.net.exceptions.InvalidIdException;
 import se.survivor.net.exceptions.InvalidRequestParamsException;
 import se.survivor.net.exceptions.UnauthorizedException;
 import se.survivor.net.models.User;
-
 import se.survivor.net.services.db.UserDbService;
 import se.survivor.net.utils.JWTUtility;
 import se.survivor.net.utils.Secret;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.util.Map;
@@ -59,7 +57,8 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public Map<String, String> login(@RequestBody Map<String, String> body) throws NoSuchAlgorithmException, UnauthorizedException {
+    public Map<String, String> login(
+            @RequestBody Map<String, String> body) throws UnauthorizedException {
         String username = body.get("username");
         String password = body.get("password");
         if (username == null || password == null) {

@@ -30,7 +30,9 @@ public class PostController {
     public List<PostDTO> getHomePosts(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @RequestParam(CHUNK) int chunk) throws InvalidValueException {
-        return postService.getHomePosts(JWTUtility.getUsernameFromToken(jwtToken), chunk);
+        return postService.getHomePosts(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                chunk);
     }
 
     @GetMapping("{postId}")
@@ -43,7 +45,7 @@ public class PostController {
     }
 
     @PostMapping("")
-    public Map<String, String> addPost(
+    public Map<String, Object> addPost(
             @RequestHeader(AUTHORIZATION) String jwtToken,
             @RequestBody Map<String, String> postInfo) {
         String title = Objects.requireNonNull(postInfo.get(TITLE));
@@ -52,13 +54,14 @@ public class PostController {
         if(postInfo.containsKey(PARENT_ID)) {
             parentId = Long.parseLong(postInfo.get(PARENT_ID));
         }
-        postService.addPost(
+        PostDTO post = postService.addPost(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 title,
                 caption,
                 parentId
         );
-        return Map.of(SUCCESS, TRUE);
+        return Map.of(SUCCESS, TRUE,
+                INFO, post);
     }
 
 

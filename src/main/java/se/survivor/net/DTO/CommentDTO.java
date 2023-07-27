@@ -18,7 +18,7 @@ public class CommentDTO {
         this.commentId = comment.getCommentId();
         this.isSolution = comment.isSolution();
         this.parentId = comment.getParentComment() == null ? -1L : comment.getParentComment().getCommentId();
-        this.user =  new UserDTO(comment.getUser());
+        this.user =  new UserDTO(comment.getUser(), 0, 0);
         this.postId = comment.getPost().getPostId();
         this.text = comment.getText();
         this.createdAt = comment.getCreatedAt();

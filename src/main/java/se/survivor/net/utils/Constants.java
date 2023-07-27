@@ -1,6 +1,10 @@
 package se.survivor.net.utils;
 
 public class Constants {
+    public static final int CHUNK_SIZE = 10;
+
+
+
     public static final String AUTHORIZATION = "Authorization";
 
     public static final String USER_ID = "userId";
@@ -9,7 +13,7 @@ public class Constants {
     public static final String EMAIL = "email";
     public static final String NAME = "name";
 
-    public static final String BIRTHDATE = "birthDate";
+    public static final String BIRTHDATE = "birthdate";
     public static final String STATUS = "status";
     public static final String SUCCESS = "success";
     public static final String FAIL = "fail";
@@ -29,9 +33,10 @@ public class Constants {
     public static final String TITLE = "title";
 
     public static final String CAPTION = "caption";
-    public static final String PARENT_ID = "parentID";
+    public static final String PARENT_ID = "parentId";
     public static final String TRUE = "true";
     public static final String REACTION_TYPE = "reactionType";
     public static final String TEXT = "text";
     public static final String PICTURE_ID = "pictureId";
+    public static final String INFO = "info";
 }

@@ -23,35 +23,38 @@ public class UserService {
         if(!authorizationService.canAccessProfile(viewerUser, username)) {
             throw new UnauthorizedException("User cannot see the other user's information");
         }
-        return new UserDTO(userDbService.getUserByUsername(username));
+        // TODO fix number of followers
+        return new UserDTO(userDbService.getUserByUsername(username), 0, 0);
     }
 
     public UserDTO getUserDTOByEmail(String viewerUsername, String email) throws UnauthorizedException {
-        UserDTO targetUser = new UserDTO(userDbService.getUserByEmail(email));
+        // TODO fix number of followers
+        UserDTO targetUser = new UserDTO(userDbService.getUserByEmail(email), 0, 0);
         if(!authorizationService.canAccessProfile(viewerUsername, targetUser.getUsername())) {
             throw new UnauthorizedException("User cannot access other user's profile information");
         }
         return targetUser;
     }
 
-    public List<UserDTO> getUserFollowersDTO(String viewerUsername, String username) throws UnauthorizedException {
+    public List<UserDTO> getUserFollowersDTO(String viewerUsername, String username, int chunk) throws UnauthorizedException {
         if(!authorizationService.canViewFollowList(viewerUsername, username)) {
             throw new UnauthorizedException("User cannot access other user's any follow list");
         }
-        return userDbService.getFollowers(username)
+        // TODO fix number of followers
+        return userDbService.getFollowers(username, chunk)
                 .stream()
-                .map(UserDTO::new)
+                .map(user -> new UserDTO(user, 0, 0))
                 .toList();
     }
 
-    public List<UserDTO> getUserFollowingsDTO(String viewerUsername, String username) throws UnauthorizedException {
+    public List<UserDTO> getUserFollowingsDTO(String viewerUsername, String username, int chunk) throws UnauthorizedException {
         if(!authorizationService.canViewFollowList(viewerUsername, username)) {
             throw new UnauthorizedException("User cannot access other user's any follow list");
         }
-
-        return userDbService.getFollowings(username)
+        // TODO fix number of followers
+        return userDbService.getFollowings(username, 0)
                 .stream()
-                .map(UserDTO::new)
+                .map(user -> new UserDTO(user, 0, 0))
                 .toList();
     }
 
@@ -95,7 +98,7 @@ public class UserService {
         }
     }
 
-    public List<UserDTO> searchUsers(String query) {
-        return userDbService.searchUsers(query).stream().map(UserDTO::new).toList();
+    public List<UserDTO> searchUsers(String query, int chunk) {
+        return userDbService.searchUsers(query, chunk).stream().map(user -> new UserDTO(user, 0, 0)).toList();
     }
 }

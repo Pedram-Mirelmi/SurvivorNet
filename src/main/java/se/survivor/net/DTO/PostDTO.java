@@ -3,7 +3,6 @@ package se.survivor.net.DTO;
 import se.survivor.net.models.Picture;
 import se.survivor.net.models.Post;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class PostDTO {
 
     public PostDTO(Post post, long commentCount, long reactionCount, long parentId) {
         this.postId = post.getPostId();
-        this.user = new UserDTO(post.getUser());
+        this.user = new UserDTO(post.getUser(), 0, 0);
         this.title = post.getTitle();
         this.caption = post.getCaption();
         this.parentId = parentId;

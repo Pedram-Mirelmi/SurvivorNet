@@ -93,7 +93,7 @@ class UserControllerTests {
     @Test
     @Order(3)
     void testFollowingsAfterFollow() throws UnauthorizedException {
-        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername() );
+        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername(), 0);
         assertEquals(1, followings.size());
         UserDTO user = followings.get(0);
         assertEquals(integrationTestUser2.getUsername(), user.getUsername());
@@ -102,7 +102,7 @@ class UserControllerTests {
     @Test
     @Order(3)
     void testFollowersAfterFollow() throws UnauthorizedException {
-        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername());
+        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername(), 0);
         assertEquals(1, followers.size());
         UserDTO user = followers.get(0);
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
@@ -119,14 +119,14 @@ class UserControllerTests {
     @Test
     @Order(5)
     void testFollowingsAfterUnfollow() throws UnauthorizedException {
-        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername() );
+        var followings = userService.getUserFollowingsDTO(integrationTestUser1.getUsername(), integrationTestUser1.getUsername(), 0);
         assertEquals(0, followings.size());
     }
 
     @Test
     @Order(5)
     void testFollowersAfterUnfollow() throws UnauthorizedException {
-        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername());
+        var followers = userService.getUserFollowersDTO(integrationTestUser2.getUsername(), integrationTestUser2.getUsername(), 0);
         assertEquals(0, followers.size());
     }
 }

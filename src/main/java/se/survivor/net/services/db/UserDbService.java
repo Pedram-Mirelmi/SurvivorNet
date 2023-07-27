@@ -2,7 +2,6 @@ package se.survivor.net.services.db;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.Hibernate;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -119,37 +118,48 @@ public class UserDbService {
         return success;
     }
 
-    public List<User> getFollowers(String username) {
+    public List<User> getFollowers(String username, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserByUsername(username, entityManager);
-        Hibernate.initialize(user.getFollowers());
-        List<User> followers = user.getFollowers();
+
+        var followers = entityManager.createQuery(
+                "SELECT u.followers FROM User u " +
+                "WHERE u.username=:username", User.class)
+                .setParameter(USERNAME, username)
+                .setFirstResult(chunk*CHUNK_SIZE)
+                .setMaxResults((chunk+1)*CHUNK_SIZE)
+                .getResultList();
         entityManager.getTransaction().commit();
         entityManager.close();
         return followers;
     }
 
-    public List<User> getFollowings(String username) {
+    public List<User> getFollowings(String username, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
-        User user = getUserByUsername(username, entityManager);
-        Hibernate.initialize(user.getFollowings());
-        List<User> followings = user.getFollowings();
+        var followings = entityManager.createQuery(
+                "SELECT u.followings FROM User u " +
+                        "WHERE u.username=:username", User.class)
+                .setParameter(USERNAME, username)
+                .setFirstResult(chunk*CHUNK_SIZE)
+                .setMaxResults((chunk+1)*CHUNK_SIZE)
+                .getResultList();
         entityManager.getTransaction().commit();
         entityManager.close();
         return followings;
     }
 
-    public List<User> searchUsers(String query) {
+    public List<User> searchUsers(String query, int chunk) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();
         List<User> resultList = entityManager.createQuery(
                 "SELECT u FROM User u " +
-                        "WHERE u.username LIKE '%:query%' " +
-                        "OR u.name LIKE '%:query%' " +
-                        "OR u.email LIKE '%:query%'", User.class)
+                        "WHERE u.username LIKE CONCAT('%', :query, '%') " +
+                        "OR u.name LIKE CONCAT('%', :query, '%') " +
+                        "OR u.email LIKE CONCAT('%', :query, '%') ", User.class)
                 .setParameter(QUERY, query)
+                .setFirstResult(chunk*CHUNK_SIZE)
+                .setMaxResults((chunk+1)*CHUNK_SIZE)
                 .getResultList();
         entityManager.getTransaction().commit();
         entityManager.close();

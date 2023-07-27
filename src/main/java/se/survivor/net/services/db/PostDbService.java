@@ -15,8 +15,7 @@ import se.survivor.net.models.User;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static se.survivor.net.utils.Constants.POST_ID;
-import static se.survivor.net.utils.Constants.USERNAME;
+import static se.survivor.net.utils.Constants.*;
 
 @Service
 public class PostDbService {
@@ -104,7 +103,7 @@ public class PostDbService {
                         "       WHERE u.username=:username)" +
                         "ORDER BY p.createdAt DESC ", Post.class)
                 .setParameter(USERNAME, username)
-                .setFirstResult(chunk*10)
+                .setFirstResult(chunk*CHUNK_SIZE)
                 .setMaxResults((chunk+1)*10)
                 .getResultList();
 
