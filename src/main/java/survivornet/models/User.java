@@ -11,6 +11,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -24,9 +25,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private Date birthDate;
+    private Date birthdate;
 
-    @Column(nullable = false)
+    @Column(name = "joined_at", nullable = false)
     private Date joinedAt;
 
     @Column(nullable = false)
@@ -35,15 +36,15 @@ public class User {
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
             cascade = CascadeType.ALL)
-    @JoinColumn(name = "profilePicId",
-            referencedColumnName = "pictureId")
+    @JoinColumn(name = "profile_pic_id",
+            referencedColumnName = "picture_id")
     private Picture profilePic;
 
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
             cascade = CascadeType.ALL)
-    @JoinColumn(name = "backgroundPicId",
-            referencedColumnName = "pictureId")
+    @JoinColumn(name = "background_pic_id",
+            referencedColumnName = "picture_id")
     private Picture backgroundPic;
 
     @OneToMany(targetEntity = Picture.class,
@@ -55,38 +56,38 @@ public class User {
     @ManyToMany(targetEntity = User.class,
             fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-                joinColumns = {@JoinColumn(referencedColumnName = "userId",
-                        name = "followerId")},
-                inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                        name = "followeeId")})
+                joinColumns = {@JoinColumn(referencedColumnName = "user_id",
+                        name = "follower_id")},
+                inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
+                        name = "followee_id")})
     private List<User> followings;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "follows",
-            joinColumns = {@JoinColumn( referencedColumnName = "userId",
-                    name = "followeeId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "followerId")})
+            joinColumns = {@JoinColumn( referencedColumnName = "user_id",
+                    name = "followee_id")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
+                    name = "follower_id")})
     private List<User> followers;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "blockerId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "blockeeId")})
+            joinColumns = {@JoinColumn(referencedColumnName = "user_id",
+                    name = "blocker_id")},
+            inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
+                    name = "blockee_id")})
     private List<User> blockList;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 //    @JoinColumn(name = "userId", referencedColumnName = "userId")
     private List<Post> posts;
 
-    public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
+    public User(String username, String password, String name, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
         this.password = password;
         this.name = name;
         this.email = email;
-        this.birthDate = birthDate;
+        this.birthdate = birthdate;
         this.joinedAt = joinedAt;
         this.profilePic = profilePic;
         this.bio = bio;
@@ -128,12 +129,12 @@ public class User {
         this.email = email;
     }
 
-    public Date getBirthDate() {
-        return birthDate;
+    public Date getBirthdate() {
+        return birthdate;
     }
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
     }
 
     public Date getJoinedAt() {
@@ -155,10 +156,6 @@ public class User {
     public void setBackgroundPic(Picture backgroundPic) {
         this.backgroundPic = backgroundPic;
     }
-
-//    public Set<Post> getPosts() {
-//        return posts;
-//    }
 
     public String getBio() {
         return bio;

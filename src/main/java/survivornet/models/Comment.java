@@ -10,21 +10,22 @@ import java.util.List;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "comment_id")
     private long commentId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_solution")
     private boolean isSolution;
 
     @ManyToOne(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentId", referencedColumnName = "commentId")
+    @JoinColumn(name = "parentId", referencedColumnName = "comment_id")
     private Comment parentComment;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private Post post;
 
     @Column(nullable = false)

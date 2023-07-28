@@ -8,14 +8,15 @@ import jakarta.persistence.*;
 public class CommentLike {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "like_id")
     private long likeId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
     @ManyToOne(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "commentId", referencedColumnName = "commentId")
+    @JoinColumn(name = "comment_id", referencedColumnName = "comment_id")
     private Comment comment;
 
     @Column(nullable = false)

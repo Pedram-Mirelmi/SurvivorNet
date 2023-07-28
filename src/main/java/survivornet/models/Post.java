@@ -11,10 +11,11 @@ import java.util.List;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "post_id")
     private long postId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
     @Column(nullable = false)
@@ -27,23 +28,23 @@ public class Post {
     private String caption;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentId", referencedColumnName = "postId")
+    @JoinColumn(name = "parentId", referencedColumnName = "post_id")
     private Post parent;
 
 //    @OneToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "postId", referencedColumnName = "parentId")
+//    @JoinColumn(name = "post_id", referencedColumnName = "parentId")
 //    private List<Post> children;
 
     @OneToMany(targetEntity = Picture.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private List<Picture> pictures;
 
     @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private List<Comment> comments;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private List<PostReaction> reactions;
 
 
