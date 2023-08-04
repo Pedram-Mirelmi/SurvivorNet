@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 public class PostReaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long reactionId;
+    private Long reactionId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
@@ -31,7 +31,7 @@ public class PostReaction {
 
     }
 
-    public long getReactionId() {
+    public Long getReactionId() {
         return reactionId;
     }
 

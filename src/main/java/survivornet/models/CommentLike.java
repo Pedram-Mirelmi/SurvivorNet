@@ -9,7 +9,7 @@ public class CommentLike {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "like_id")
-    private long likeId;
+    private Long likeId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
@@ -31,7 +31,7 @@ public class CommentLike {
         this.isLike = isLike;
     }
 
-    public long getLikeId() {
+    public Long getLikeId() {
         return likeId;
     }
 

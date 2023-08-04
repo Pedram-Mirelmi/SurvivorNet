@@ -11,7 +11,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "comment_id")
-    private long commentId;
+    private Long commentId;
 
     @Column(nullable = false, name = "is_solution")
     private boolean isSolution;
@@ -34,9 +34,10 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(targetEntity = CommentLike.class,
+    @OneToMany(fetch = FetchType.LAZY,
             mappedBy = "comment",
-            fetch = FetchType.LAZY)
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<CommentLike> likes;
 
     public Comment(User user, Post post, String text, LocalDateTime createdAt, Comment parentComment, boolean isSolution) {

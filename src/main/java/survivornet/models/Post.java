@@ -12,7 +12,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "post_id")
-    private long postId;
+    private Long postId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
@@ -35,16 +35,22 @@ public class Post {
 //    @JoinColumn(name = "post_id", referencedColumnName = "parentId")
 //    private List<Post> children;
 
-    @OneToMany(targetEntity = Picture.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
+    @OneToMany(fetch = FetchType.EAGER,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Picture> pictures;
 
-    @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Comment> comments;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<PostReaction> reactions;
 
 
@@ -60,7 +66,7 @@ public class Post {
         this.parent = parent;
     }
 
-    public long getPostId() {
+    public Long getPostId() {
         return postId;
     }
 

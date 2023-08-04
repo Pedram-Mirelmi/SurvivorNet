@@ -9,14 +9,14 @@ public class Picture {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "picture_id")
-    private long pictureId;
+    private Long pictureId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id", unique = false)
     private User owner;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = true, name = "post_id", referencedColumnName = "post_id")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private Post post;
 
     public Picture() {

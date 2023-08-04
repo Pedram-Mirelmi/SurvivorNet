@@ -35,14 +35,16 @@ public class User {
 
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL)
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @JoinColumn(name = "profile_pic_id",
             referencedColumnName = "picture_id")
     private Picture profilePic;
 
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL)
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @JoinColumn(name = "background_pic_id",
             referencedColumnName = "picture_id")
     private Picture backgroundPic;
@@ -50,36 +52,14 @@ public class User {
     @OneToMany(targetEntity = Picture.class,
             mappedBy = "owner",
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Picture> pictures;
 
-    @ManyToMany(targetEntity = User.class,
-            fetch = FetchType.LAZY)
-    @JoinTable(name = "follows",
-                joinColumns = {@JoinColumn(referencedColumnName = "user_id",
-                        name = "follower_id")},
-                inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
-                        name = "followee_id")})
-    private List<User> followings;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "follows",
-            joinColumns = {@JoinColumn( referencedColumnName = "user_id",
-                    name = "followee_id")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
-                    name = "follower_id")})
-    private List<User> followers;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn(referencedColumnName = "user_id",
-                    name = "blocker_id")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "user_id",
-                    name = "blockee_id")})
-    private List<User> blockList;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "user",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Post> posts;
 
     public User(String username, String password, String name, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
@@ -97,7 +77,7 @@ public class User {
     public User() {
     }
 
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -173,23 +153,23 @@ public class User {
         this.password = password;
     }
 
-    public List<User> getFollowings() {
-        return followings;
-    }
-
-    public List<User> getFollowers() {
-        return followers;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
+//    public List<User> getFollowings() {
+//        return followings;
+//    }
+//
+//    public List<User> getFollowers() {
+//        return followers;
+//    }
+//
+//    public List<Post> getPosts() {
+//        return posts;
+//    }
 
     public List<Picture> getPictures() {
         return pictures;
     }
 
-    public List<User> getBlockList() {
-        return blockList;
-    }
+//    public List<User> getBlockList() {
+//        return blockList;
+//    }
 }
