@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "posts", schema = "public")
+@Table(name = "posts",
+        schema = "public",
+        indexes = {@Index(columnList = "user_id", name = "post_user_index")})
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

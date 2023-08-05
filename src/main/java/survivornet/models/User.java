@@ -62,6 +62,38 @@ public class User {
             orphanRemoval = true)
     private List<Post> posts;
 
+    @OneToMany(fetch = FetchType.LAZY,
+                mappedBy = "follower",
+                cascade = {CascadeType.ALL},
+                orphanRemoval = true)
+    private List<UserFollow> followings;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "followee",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserFollow> followers;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "blocker",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserBlock> blockees;
+
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "blockee",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserBlock> blockers;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "user",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<PostReaction> reactions;
+
+
     public User(String username, String password, String name, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
         this.password = password;

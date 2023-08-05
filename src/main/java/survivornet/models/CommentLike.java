@@ -4,7 +4,9 @@ package survivornet.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "commentLikes", schema = "public")
+@Table(name = "comment_likes",
+        schema = "public",
+        indexes = {@Index(columnList = "comment_id", name = "like_comment_index")})
 public class CommentLike {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

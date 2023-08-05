@@ -4,7 +4,10 @@ package survivornet.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "PostReactions", schema = "public")
+@Table(name = "post_reactions",
+        schema = "public",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "post_id"}),
+        indexes = {@Index(columnList = "post_id", name = "reaction_post_index")})
 public class PostReaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,7 +24,7 @@ public class PostReaction {
     @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private Post post;
 
-    public PostReaction(User user, int reactionType, Post post) {
+    public PostReaction(User user, Post post, int reactionType) {
         this.user = user;
         this.reactionType = reactionType;
         this.post = post;
@@ -41,6 +44,10 @@ public class PostReaction {
 
     public int getReactionType() {
         return reactionType;
+    }
+
+    public void setReactionType(int reactionType) {
+        this.reactionType = reactionType;
     }
 
     public Post getPost() {
