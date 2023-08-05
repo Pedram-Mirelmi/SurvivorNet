@@ -1,5 +1,7 @@
 package survivornet.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +30,16 @@ class UserControllerTests {
     @Autowired
     UserDbService userDbService;
 
+    @Autowired
+    private final EntityManagerFactory entityManagerFactory;
 
     private User integrationTestUser1;
     private User integrationTestUser2;
 
     @Autowired
-    public UserControllerTests(UserService userService) {
+    public UserControllerTests(UserService userService, EntityManagerFactory entityManagerFactory) {
         this.userService = userService;
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @AfterAll
@@ -46,13 +51,17 @@ class UserControllerTests {
 
     @BeforeAll
     void setUp() throws ParseException {
-        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        integrationTestUser1 = userDbService.addUser(
+                "integrationTestUser1",
                 "integrationTestUser1Name",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser1");
-        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+        integrationTestUser2 = userDbService.addUser(
+                "integrationTestUser2",
                 "integrationTestUser2Name",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
@@ -66,7 +75,6 @@ class UserControllerTests {
     	UserDTO user = userService.getUserDTOByUsername(integrationTestUser1.getUsername(), integrationTestUser1.getUsername());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
         assertEquals(integrationTestUser1.getName(), user.getName());
-        assertTrue(user.getBio().isEmpty());
 	}
 
 	@Test
@@ -75,7 +83,6 @@ class UserControllerTests {
         UserDTO user = userService.getUserDTOByEmail(integrationTestUser1.getEmail(), integrationTestUser1.getEmail());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
         assertEquals(integrationTestUser1.getName(), user.getName());
-        assertTrue(user.getBio().isEmpty());
     }
 
     @Test

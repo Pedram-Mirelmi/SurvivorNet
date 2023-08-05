@@ -79,10 +79,12 @@ public class PostController {
     @GetMapping("{postId}/reactions")
     public List<PostReactionDTO> getPostReactions(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @PathVariable(Constants.POST_ID) long postId) throws UnauthorizedException {
+            @PathVariable(Constants.POST_ID) long postId,
+            @RequestParam(Constants.CHUNK) int chunk) throws UnauthorizedException {
         return postService.getReactions(
                 JWTUtility.getUsernameFromToken(jwtToken),
-                postId);
+                postId,
+                chunk);
     }
 
 }

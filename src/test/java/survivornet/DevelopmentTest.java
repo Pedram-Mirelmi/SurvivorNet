@@ -1,11 +1,17 @@
 package survivornet;
 
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import survivornet.repositories.PictureRepository;
+import survivornet.repositories.UserRepository;
+import survivornet.services.db.UserDbService;
+import survivornet.services.domain.UserService;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -13,25 +19,30 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @SpringBootTest
 public class DevelopmentTest {
 
-//    @Autowired
-//    private final EntityManagerFactory entityManagerFactory;
-//
-//
-//    @Autowired
-//    public DevelopmentTest(EntityManagerFactory entityManagerFactory) {
-//        this.entityManagerFactory = entityManagerFactory;
-//    }
-//
-//    @Test
-//    @Disabled
-//    void test() {
-//        EntityManager entityManager = entityManagerFactory.createEntityManager();
-//        var result = entityManager.createQuery(
-//                "SELECT NEW survivornet.DTO.UserDTO(u, SIZE(u.followers), SIZE(u.followings)) " +
-//                "FROM survivornet.models.User u " +
-//                "WHERE u.userId=:userId", UserDTO.class)
-//                .setParameter(USER_ID, 1)
-//                .getSingleResult();
-//        assertEquals(1, result.getUserId());
-//    }
+    @Autowired
+    private final UserDbService userDbService;
+
+    @Autowired
+    private final UserService userService;
+
+    @Autowired
+    private final UserRepository userRepository;
+
+    @Autowired
+    private final PictureRepository pictureRepository;
+
+    @Autowired
+    public DevelopmentTest(UserDbService userDbService, UserService userService, UserRepository userRepository, PictureRepository pictureRepository) {
+        this.userService = userService;
+        this.userDbService = userDbService;
+        this.userRepository = userRepository;
+        this.pictureRepository = pictureRepository;
+    }
+
+    @Test
+    void test() {
+        userService.removeFollow("integrationTestUser1", "integrationTestUser2");
+    }
+
+
 }

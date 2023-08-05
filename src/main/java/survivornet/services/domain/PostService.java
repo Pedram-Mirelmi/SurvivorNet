@@ -26,14 +26,7 @@ public class PostService {
         if (chunk < 0) {
             throw new InvalidValueException("Invalid negative chunk value");
         }
-        List<Post> posts = postDbService.getUserHomePosts(username, chunk);
-        return posts.stream().map(
-                p -> new PostDTO(
-                        p,
-                        postDbService.getPostCommentCount(p.getPostId()),
-                        postDbService.getPostReactionCount(p.getPostId()),
-                        p.getParent() == null ? -1 : p.getParent().getPostId())
-        ).toList();
+        return postDbService.getUserHomePostDTOs(username, chunk);
     }
 
     public PostDTO getPostDTO(String username, long postId) throws UnauthorizedException {
@@ -52,20 +45,11 @@ public class PostService {
                 post.getParent() == null ? -1 : post.getParent().getPostId());
     }
 
-    public List<PostDTO> getUserPosts(String viewerUsername, String underViewUsername, int chunk) throws InvalidValueException, UnauthorizedException {
-        if (chunk < 0) {
-            throw new InvalidValueException("Invalid negative chunk value");
-        }
+    public List<PostDTO> getUserPosts(String viewerUsername, String underViewUsername, int chunk) throws UnauthorizedException {
         if(!authorizationService.canAccessProfile(viewerUsername, underViewUsername)) {
             throw new UnauthorizedException("User cannot access this user!");
         }
-        return postDbService.getUserPosts(underViewUsername, chunk)
-                .stream()
-                .map(p -> new PostDTO(p,
-                        postDbService.getPostCommentCount(p.getPostId()),
-                        postDbService.getPostReactionCount(p.getPostId()),
-                        p.getParent() == null ? -1 : p.getParent().getPostId()
-                )).toList();
+        return postDbService.getUserPostDTOs(underViewUsername, chunk);
     }
 
     public void addReaction(String username, long postId, int reactionType) throws UnauthorizedException {
@@ -75,12 +59,10 @@ public class PostService {
         postDbService.addPostReaction(username, postId, reactionType);
     }
 
-    public List<PostReactionDTO> getReactions(String username, long postId) throws UnauthorizedException {
+    public List<PostReactionDTO> getReactions(String username, long postId, int chunk) throws UnauthorizedException {
         if(!authorizationService.canViewPostReactions(username, postId)) {
             throw new UnauthorizedException("User cannot view this post's reactions");
         }
-        return postDbService.getPostReactions(postId).
-                stream().
-                map(PostReactionDTO::new).toList();
+        return postDbService.getPostReactionDTOs(postId, chunk);
     }
 }

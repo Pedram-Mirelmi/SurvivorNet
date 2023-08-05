@@ -7,21 +7,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class PostDTO {
-    private long postId;
+    private final long postId;
 
-    private UserDTO user;
+    private final UserDTO user;
 
-    private String title;
+    private final String title;
 
-    private String caption;
+    private final String caption;
 
-    private long parentId;
+    private final Long parentId;
 
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
 
-    private List<Long> pictures;
+    private final List<Long> pictures;
 
-    public PostDTO(Post post, long commentCount, long reactionCount, long parentId) {
+    private final Long numberOfComments;
+
+    private final Long numberOfReactions;
+
+    public PostDTO(Post post, long commentCount, long reactionCount, Long parentId) {
         this.postId = post.getPostId();
         this.user = new UserDTO(post.getUser(), 0, 0);
         this.title = post.getTitle();
@@ -29,6 +33,16 @@ public class PostDTO {
         this.parentId = parentId;
         this.createdAt = post.getCreatedAt();
         this.pictures = post.getPictures() == null ? null : post.getPictures().stream().map(Picture::getPictureId).toList();
+        this.numberOfComments = (long)commentCount;
+        this.numberOfReactions = (long)reactionCount;
+    }
+
+    public Long getNumberOfComments() {
+        return numberOfComments;
+    }
+
+    public Long getNumberOfReactions() {
+        return numberOfReactions;
     }
 
     public long getPostId() {

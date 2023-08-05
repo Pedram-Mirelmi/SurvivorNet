@@ -1,6 +1,7 @@
 package survivornet.services;
 
 
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class PostControllerTests {
 
     @Autowired
     private final PostService postService;
+
+    @Autowired
+    private final EntityManagerFactory entityManagerFactory;
     
     private User integrationTestUser1;
     private User integrationTestUser2;
@@ -40,27 +44,31 @@ public class PostControllerTests {
     private PostDTO integrationUser2Post1;
 
     @Autowired
-    public PostControllerTests(PostService postService, UserDbService userDbService) {
+    public PostControllerTests(PostService postService, UserDbService userDbService, EntityManagerFactory entityManagerFactory) {
         this.postService = postService;
         this.userDbService = userDbService;
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll
     void setUp() {
-        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+        integrationTestUser1 = userDbService.addUser(
+                "integrationTestUser1",
                 "integrationTestUser1Name",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser1");
-        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+        integrationTestUser2 = userDbService.addUser(
+                "integrationTestUser2",
                 "integrationTestUser2Name",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser2");
         
-        userDbService.changeFollow(integrationTestUser1.getUsername(),
+        userDbService.changeFollow(
+                integrationTestUser1.getUsername(),
                 integrationTestUser2.getUsername(),
                 true);
 
@@ -143,7 +151,7 @@ public class PostControllerTests {
     @Test
     @Order(5)
     void getPostReactions() throws UnauthorizedException {
-        List<PostReactionDTO> reactions = postService.getReactions(integrationTestUser2.getUsername(), integrationUser2Post1.getPostId());
+        List<PostReactionDTO> reactions = postService.getReactions(integrationTestUser2.getUsername(), integrationUser2Post1.getPostId(), 0);
         assertEquals(1, reactions.size());
         PostReactionDTO reaction = reactions.get(0);
         assertEquals(integrationUser2Post1.getPostId(), reaction.getPostId());

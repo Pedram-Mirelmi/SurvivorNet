@@ -14,6 +14,8 @@ public class UserDTO {
     private final String bio;
     private final long profilePicId;
     private final long backgroundPicId;
+    private final long numberOfFollowers;
+    private final long numberOfFollowings;
 
 
     public UserDTO(User user, long numberOfFollowers, long numberOfFollowings) {
@@ -26,6 +28,8 @@ public class UserDTO {
         this.bio = user.getBio();
         this.profilePicId = user.getProfilePic() == null ? 0 : user.getProfilePic().getPictureId();
         this.backgroundPicId = user.getBackgroundPic() == null ? 0 : user.getBackgroundPic().getPictureId();
+        this.numberOfFollowers = numberOfFollowers;
+        this.numberOfFollowings = numberOfFollowings;
     }
 
     public long getUserId() {

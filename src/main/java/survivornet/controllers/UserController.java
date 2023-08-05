@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("{username}/posts")
-    public List<PostDTO> getUserProfile(
+    public List<PostDTO> getUserPosts(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
             @PathVariable(Constants.USERNAME) String username,
             @RequestParam(Constants.CHUNK) int chunk) throws InvalidValueException, UnauthorizedException {
