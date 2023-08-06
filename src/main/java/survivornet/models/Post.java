@@ -7,14 +7,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "posts", schema = "public")
+@Table(name = "posts",
+        schema = "public",
+        indexes = {@Index(columnList = "user_id", name = "post_user_index")})
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long postId;
+    @Column(name = "post_id")
+    private Long postId;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
     @Column(nullable = false)
@@ -27,23 +30,29 @@ public class Post {
     private String caption;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentId", referencedColumnName = "postId")
+    @JoinColumn(name = "parentId", referencedColumnName = "post_id")
     private Post parent;
 
 //    @OneToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "postId", referencedColumnName = "parentId")
+//    @JoinColumn(name = "post_id", referencedColumnName = "parentId")
 //    private List<Post> children;
 
-    @OneToMany(targetEntity = Picture.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @OneToMany(fetch = FetchType.EAGER,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Picture> pictures;
 
-    @OneToMany(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Comment> comments;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "post",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<PostReaction> reactions;
 
 
@@ -59,7 +68,7 @@ public class Post {
         this.parent = parent;
     }
 
-    public long getPostId() {
+    public Long getPostId() {
         return postId;
     }
 

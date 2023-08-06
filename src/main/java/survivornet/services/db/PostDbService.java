@@ -1,190 +1,114 @@
 package survivornet.services.db;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.Hibernate;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import survivornet.DTO.PostDTO;
+import survivornet.DTO.PostReactionDTO;
 import survivornet.exceptions.InvalidIdException;
 import survivornet.models.Post;
 import survivornet.models.PostReaction;
 import survivornet.models.User;
-import survivornet.utils.Constants;
+import survivornet.repositories.CommentRepository;
+import survivornet.repositories.PostReactionRepository;
+import survivornet.repositories.PostRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static survivornet.utils.Constants.CHUNK_SIZE;
 
 @Service
 public class PostDbService {
     private final UserDbService userDbService;
-    private final EntityManagerFactory entityManagerFactory;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final PostReactionRepository postReactionRepository;
 
-    public PostDbService(UserDbService userDbService) {
+
+    public PostDbService(UserDbService userDbService, PostRepository postRepository, CommentRepository commentRepository, PostReactionRepository postReactionRepository) {
         this.userDbService = userDbService;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.postReactionRepository = postReactionRepository;
     }
 
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Post addPost(String username, String title, String caption, long parentId) {
         Post parent = null;
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
         if(parentId != -1) {
-            parent = getPostById(parentId, entityManager);
+            parent = getPostById(parentId);
         }
-        User user = userDbService.getUserByUsername(username, entityManager);
-        Post post = new Post(user, title, caption, LocalDateTime.now(), parent);
-        entityManager.persist(post);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return post;
+        return postRepository.save(new Post(userDbService.getUserByUsername(username), title, caption, LocalDateTime.now(), parent));
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Post getPostById(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        Post post = getPostById(postId, entityManager);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return post;
-    }
-
-    public Post getPostById(long postId, EntityManager entityManager) {
-        Post post = entityManager.find(Post.class, postId);
-        if(post == null) {
-            if(entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
-            entityManager.close();
+        Optional<Post> post = postRepository.findById(postId);
+        if(post.isEmpty()) {
             throw new InvalidIdException("Invalid post Id");
         }
-        return post;
+        return post.get();
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public PostDTO getPostDTO(long postId) {
-        Post post = getPostById(postId);
-        return new PostDTO(post,
-                getPostCommentCount(postId),
-                getPostReactionCount(postId),
-                post.getParent() == null ? -1 : post.getParent().getPostId());
-    }
-
-
-    public List<Post> getUserPosts(String username, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        List<Post> resultList = entityManager.createQuery(
-                "SELECT p FROM Post p " +
-                        "WHERE p.user.username=:username", Post.class)
-                .setParameter(Constants.USERNAME, username)
-                .setFirstResult(chunk*CHUNK_SIZE)
-                .setMaxResults((chunk+1)*CHUNK_SIZE)
-                .getResultList();
-
-        resultList.forEach(Hibernate::initialize);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return resultList;
-    }
-
-
-    public List<Post> getUserHomePosts(String username, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        List<Post> resultList = entityManager.createQuery(
-                "SELECT p FROM Post p " +
-                        "WHERE p.user IN " +
-                        "       (SELECT u.followings from User u  " +
-                        "       WHERE u.username=:username)" +
-                        "ORDER BY p.createdAt DESC ", Post.class)
-                .setParameter(Constants.USERNAME, username)
-                .setFirstResult(chunk* CHUNK_SIZE)
-                .setMaxResults((chunk+1)*10)
-                .getResultList();
-
-        resultList.forEach(p -> Hibernate.initialize(p.getParent()));
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return resultList;
-
-    }
-
-    public long getPostCommentCount(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        long count = entityManager.createQuery(
-                "SELECT COUNT(*) " +
-                        "FROM Comment c " +
-                        "WHERE c.post.postId = :postId", Long.class)
-                .setParameter(Constants.POST_ID, postId)
-                .getSingleResult();
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return count;
-
-    }
-
-    public long getPostReactionCount(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        long count = entityManager.createQuery(
-                "SELECT COUNT(*) " +
-                        "FROM PostReaction pr " +
-                        "WHERE pr.post.postId = :postId", Long.class)
-                .setParameter(Constants.POST_ID, postId)
-                .getSingleResult();
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return count;
-    }
-
-    public List<PostReaction> getPostReactions(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        Post post = entityManager.find(Post.class, postId);
-        var postReactions = post.getReactions();
-        postReactions.forEach(pr -> Hibernate.initialize(pr.getUser()));
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return postReactions;
-    }
-
-    public void addPostReaction(String username, long postId, int reactionType) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        Post post = entityManager.find(Post.class, postId);
-        User user = userDbService.getUserByUsername(username, entityManager);
-        Hibernate.initialize(post.getReactions());
-        var resultList = entityManager.createQuery(
-                "SELECT pr FROM PostReaction pr " +
-                        " WHERE pr.user.username=:username AND pr.post.postId=:postId")
-                .setParameter(Constants.USERNAME, username)
-                .setParameter(Constants.POST_ID, postId)
-                .getResultList();
-        if(!resultList.isEmpty()) {
-            entityManager.remove(resultList.get(0));
+        Optional<PostDTO> post = postRepository.getDtoById(postId);
+        if(post.isEmpty()) {
+            throw new InvalidIdException("Invalid post id");
         }
-        entityManager.persist(new PostReaction(user, reactionType, post));
+        return post.get();
+    }
 
-        entityManager.getTransaction().commit();
-        entityManager.close();
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
+    public List<Post> getUserPosts(String username, int chunk) {
+        return postRepository.findAllByUsername(username, PageRequest.of(chunk, CHUNK_SIZE));
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<PostDTO> getUserPostDTOs(String username, int chunk) {
+        return postRepository.findAllDtoByUsername(username, PageRequest.of(chunk, CHUNK_SIZE));
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<PostDTO> getUserHomePostDTOs(String username, int chunk) {
+        return postRepository.findAllHomePostDtoByUsername(username, PageRequest.of(chunk, CHUNK_SIZE));
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public long getPostCommentCount(long postId) {
+        return commentRepository.countByPostId(postId);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public long getPostReactionCount(long postId) {
+        return postReactionRepository.countByPostId(postId);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<PostReactionDTO> getPostReactionDTOs(long postId, int chunk) {
+        return postReactionRepository.findAllDtoByPostId(postId, PageRequest.of(chunk, CHUNK_SIZE));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean addPostReaction(String username, long postId, int reactionType) {
+        Optional<PostReaction> postReactionOpt = postReactionRepository.findByUsernameAndPostId(username, postId);
+        PostReaction postReaction;
+        if(postReactionOpt.isEmpty()) {
+            User user = userDbService.getUserByUsername(username);
+            Post post = getPostById(postId);
+            postReaction = new PostReaction(user, post, reactionType);
+        }
+        else {
+            postReaction = postReactionOpt.get();
+            postReaction.setReactionType(reactionType);
+        }
+        postReactionRepository.save(postReaction);
+        return true;
     }
 
 

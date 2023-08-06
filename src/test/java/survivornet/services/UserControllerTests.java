@@ -1,5 +1,7 @@
 package survivornet.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,6 @@ class UserControllerTests {
     @Autowired
     UserDbService userDbService;
 
-
     private User integrationTestUser1;
     private User integrationTestUser2;
 
@@ -46,13 +47,16 @@ class UserControllerTests {
 
     @BeforeAll
     void setUp() throws ParseException {
-        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+
+        integrationTestUser1 = userDbService.addUser(
+                "integrationTestUser1",
                 "integrationTestUser1Name",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser1");
-        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+        integrationTestUser2 = userDbService.addUser(
+                "integrationTestUser2",
                 "integrationTestUser2Name",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
@@ -66,7 +70,6 @@ class UserControllerTests {
     	UserDTO user = userService.getUserDTOByUsername(integrationTestUser1.getUsername(), integrationTestUser1.getUsername());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
         assertEquals(integrationTestUser1.getName(), user.getName());
-        assertTrue(user.getBio().isEmpty());
 	}
 
 	@Test
@@ -75,7 +78,6 @@ class UserControllerTests {
         UserDTO user = userService.getUserDTOByEmail(integrationTestUser1.getEmail(), integrationTestUser1.getEmail());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
         assertEquals(integrationTestUser1.getName(), user.getName());
-        assertTrue(user.getBio().isEmpty());
     }
 
     @Test
@@ -87,7 +89,7 @@ class UserControllerTests {
     @Test
     @Order(2)
     void addFollowing() {
-        userService.addFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
+        userService.changeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername(), true);
     }
 
     @Test
@@ -111,7 +113,7 @@ class UserControllerTests {
     @Test
     @Order(4)
     void testRemoveFollow() {
-        userService.removeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
+        userService.changeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername(), false);
     }
 
 

@@ -12,10 +12,10 @@ public class UserDTO {
     private final Date birthDate;
     private final Date joinedAt;
     private final String bio;
-    private final long numberOfFollowers;
-    private final long numberOfFollowings;
     private final long profilePicId;
     private final long backgroundPicId;
+    private final long numberOfFollowers;
+    private final long numberOfFollowings;
 
 
     public UserDTO(User user, long numberOfFollowers, long numberOfFollowings) {
@@ -23,7 +23,7 @@ public class UserDTO {
         this.username = user.getUsername();
         this.name = user.getName();
         this.email = user.getEmail();
-        this.birthDate = user.getBirthDate();
+        this.birthDate = user.getBirthdate();
         this.joinedAt = user.getJoinedAt();
         this.bio = user.getBio();
         this.profilePicId = user.getProfilePic() == null ? 0 : user.getProfilePic().getPictureId();
@@ -66,5 +66,13 @@ public class UserDTO {
 
     public long getBackgroundPicId() {
         return backgroundPicId;
+    }
+
+    public long getNumberOfFollowers() {
+        return numberOfFollowers;
+    }
+
+    public long getNumberOfFollowings() {
+        return numberOfFollowings;
     }
 }

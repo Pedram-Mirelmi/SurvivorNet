@@ -1,5 +1,8 @@
 package survivornet.utils;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import survivornet.DTO.CommentDTO;
 import survivornet.models.Comment;
 import survivornet.models.Post;
 import survivornet.models.User;
@@ -18,6 +21,9 @@ public class DataGenerator {
     private static UserDbService userDbService;
     private static PostDbService postService;
     private static CommentDbService commentService;
+    private static EntityManagerFactory entityManagerFactory;
+
+    private static EntityManager entityManager;
 
     private static final List<User> users = new ArrayList<>();
     private static final List<Post> posts = new ArrayList<>();
@@ -49,7 +55,7 @@ public class DataGenerator {
                     long parentId = -1; // Default value for no parent comment
                     var postComments = getPostComments(post.getPostId());
                     if (!postComments.isEmpty() && new Random().nextInt(2) == 1) { // 50% chance of having a parent comment
-                        Comment parentComment = postComments.get(new Random().nextInt(postComments.size()));
+                        CommentDTO parentComment = postComments.get(new Random().nextInt(postComments.size()));
                         parentId = parentComment.getCommentId();
                     }
                     comments.add(commentService.addComment(owner.getUsername(), post.getPostId(), text, parentId));
@@ -61,8 +67,8 @@ public class DataGenerator {
         }
     }
 
-    private static List<Comment> getPostComments(long postId) {
-        List<Comment> comments = new ArrayList<>();
+    private static List<CommentDTO> getPostComments(long postId) {
+        List<CommentDTO> comments = new ArrayList<>();
         int chunk = 0;
         while (true) {
             System.out.println("Getting post comment");

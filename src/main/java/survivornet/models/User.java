@@ -11,6 +11,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(unique = true, nullable = false)
@@ -24,9 +25,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private Date birthDate;
+    private Date birthdate;
 
-    @Column(nullable = false)
+    @Column(name = "joined_at", nullable = false)
     private Date joinedAt;
 
     @Column(nullable = false)
@@ -34,59 +35,71 @@ public class User {
 
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL)
-    @JoinColumn(name = "profilePicId",
-            referencedColumnName = "pictureId")
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @JoinColumn(name = "profile_pic_id",
+            referencedColumnName = "picture_id")
     private Picture profilePic;
 
     @OneToOne(targetEntity = Picture.class,
             fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL)
-    @JoinColumn(name = "backgroundPicId",
-            referencedColumnName = "pictureId")
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @JoinColumn(name = "background_pic_id",
+            referencedColumnName = "picture_id")
     private Picture backgroundPic;
 
     @OneToMany(targetEntity = Picture.class,
             mappedBy = "owner",
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL)
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Picture> pictures;
 
-    @ManyToMany(targetEntity = User.class,
-            fetch = FetchType.LAZY)
-    @JoinTable(name = "follows",
-                joinColumns = {@JoinColumn(referencedColumnName = "userId",
-                        name = "followerId")},
-                inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                        name = "followeeId")})
-    private List<User> followings;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "follows",
-            joinColumns = {@JoinColumn( referencedColumnName = "userId",
-                    name = "followeeId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "followerId")})
-    private List<User> followers;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "blocks",
-            joinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "blockerId")},
-            inverseJoinColumns = {@JoinColumn(referencedColumnName = "userId",
-                    name = "blockeeId")})
-    private List<User> blockList;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "user",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<Post> posts;
 
-    public User(String username, String password, String name, String email, Date birthDate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
+    @OneToMany(fetch = FetchType.LAZY,
+                mappedBy = "follower",
+                cascade = {CascadeType.ALL},
+                orphanRemoval = true)
+    private List<UserFollow> followings;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "followee",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserFollow> followers;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "blocker",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserBlock> blockees;
+
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "blockee",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<UserBlock> blockers;
+
+    @OneToMany(fetch = FetchType.LAZY,
+            mappedBy = "user",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
+    private List<PostReaction> reactions;
+
+
+    public User(String username, String password, String name, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
         this.password = password;
         this.name = name;
         this.email = email;
-        this.birthDate = birthDate;
+        this.birthdate = birthdate;
         this.joinedAt = joinedAt;
         this.profilePic = profilePic;
         this.bio = bio;
@@ -96,7 +109,7 @@ public class User {
     public User() {
     }
 
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -128,12 +141,12 @@ public class User {
         this.email = email;
     }
 
-    public Date getBirthDate() {
-        return birthDate;
+    public Date getBirthdate() {
+        return birthdate;
     }
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
     }
 
     public Date getJoinedAt() {
@@ -156,10 +169,6 @@ public class User {
         this.backgroundPic = backgroundPic;
     }
 
-//    public Set<Post> getPosts() {
-//        return posts;
-//    }
-
     public String getBio() {
         return bio;
     }
@@ -176,23 +185,23 @@ public class User {
         this.password = password;
     }
 
-    public List<User> getFollowings() {
-        return followings;
-    }
-
-    public List<User> getFollowers() {
-        return followers;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
+//    public List<User> getFollowings() {
+//        return followings;
+//    }
+//
+//    public List<User> getFollowers() {
+//        return followers;
+//    }
+//
+//    public List<Post> getPosts() {
+//        return posts;
+//    }
 
     public List<Picture> getPictures() {
         return pictures;
     }
 
-    public List<User> getBlockList() {
-        return blockList;
-    }
+//    public List<User> getBlockList() {
+//        return blockList;
+//    }
 }

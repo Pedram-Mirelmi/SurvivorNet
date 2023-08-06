@@ -3,7 +3,6 @@ package survivornet.services.domain;
 import org.springframework.stereotype.Service;
 import survivornet.DTO.CommentDTO;
 import survivornet.exceptions.UnauthorizedException;
-import survivornet.models.Comment;
 import survivornet.services.AuthorizationService;
 import survivornet.services.db.CommentDbService;
 
@@ -23,43 +22,35 @@ public class CommentService {
         if(!authorizationService.canViewPostComments(username, postId)) {
             throw new UnauthorizedException("User cannot get this post comments!");
         }
-        return commentDbService.getPostComments(postId, chunk)
-                .stream()
-                .map(c -> new CommentDTO(c,
-                        commentDbService.getCommentLikes(c.getCommentId()),
-                        commentDbService.getCommentDislikes(c.getCommentId())))
-                .toList();
+        return commentDbService.getPostComments(postId, chunk);
     }
 
     public CommentDTO addComment(String username, long postId, String commentText, long parentId) throws UnauthorizedException {
         if(!authorizationService.canLeaveComment(username, postId)) {
             throw new UnauthorizedException("User cannot leave comment under this post");
         }
-        Comment newComment = commentDbService.addComment(username, postId, commentText, parentId);
-        return new CommentDTO(newComment, 0, 0);
+        return new CommentDTO(commentDbService.addComment(username, postId, commentText, parentId),
+                0,
+                0);
     }
 
     public List<CommentDTO> getPostSolutions(String username, long postId, int chunk) throws UnauthorizedException {
         if(!authorizationService.canViewPostComments(username, postId)) {
             throw new UnauthorizedException("User cannot view this post solutions");
         }
-        return commentDbService.getPostSolutions(postId, chunk)
-                .stream()
-                .map(c -> new CommentDTO(c,
-                        commentDbService.getCommentLikes(c.getCommentId()),
-                        commentDbService.getCommentDislikes(c.getCommentId())))
-                .toList();
+        return commentDbService.getPostSolutions(postId, chunk);
     }
 
     public CommentDTO addSolution(String username, long postId, String solutionText) throws UnauthorizedException {
         if(!authorizationService.canAddSolution(username, postId)) {
             throw new UnauthorizedException("User cannot add solution to this post");
         }
-        Comment newSolution = commentDbService.addSolution(username, postId, solutionText);
-        return new CommentDTO(newSolution, 0, 0);
+        return new CommentDTO(commentDbService.addSolution(username, postId, solutionText),
+                0,
+                0);
     }
 
-    public void likeComment(String username, long commentId, boolean likes) {
-        commentDbService.addCommentLike(username, commentId, likes);
+    public boolean likeComment(String username, long commentId, boolean likes) {
+        return commentDbService.addCommentLike(username, commentId, likes);
     }
 }

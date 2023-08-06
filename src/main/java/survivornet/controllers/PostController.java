@@ -70,19 +70,21 @@ public class PostController {
             @PathVariable(Constants.POST_ID) long postId,
             @RequestParam(Constants.REACTION_TYPE) int reactionType) throws UnauthorizedException {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        postService.addReaction(username, postId, reactionType);
+        boolean success = postService.addReaction(username, postId, reactionType);
         return Map.of(
-                Constants.STATUS, Constants.SUCCESS
+                Constants.STATUS, success
         );
     }
 
     @GetMapping("{postId}/reactions")
     public List<PostReactionDTO> getPostReactions(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @PathVariable(Constants.POST_ID) long postId) throws UnauthorizedException {
+            @PathVariable(Constants.POST_ID) long postId,
+            @RequestParam(Constants.CHUNK) int chunk) throws UnauthorizedException {
         return postService.getReactions(
                 JWTUtility.getUsernameFromToken(jwtToken),
-                postId);
+                postId,
+                chunk);
     }
 
 }

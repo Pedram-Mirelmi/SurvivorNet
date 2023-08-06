@@ -6,25 +6,28 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "comments", schema = "public")
+@Table(name = "comments",
+        schema = "public",
+        indexes = {@Index(columnList = "post_id", name = "comment_post_index")})
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long commentId;
+    @Column(name = "comment_id")
+    private Long commentId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_solution")
     private boolean isSolution;
 
     @ManyToOne(targetEntity = Comment.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentId", referencedColumnName = "commentId")
+    @JoinColumn(name = "parentId", referencedColumnName = "comment_id")
     private Comment parentComment;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "postId", referencedColumnName = "postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "post_id")
     private Post post;
 
     @Column(nullable = false)
@@ -33,9 +36,10 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(targetEntity = CommentLike.class,
+    @OneToMany(fetch = FetchType.LAZY,
             mappedBy = "comment",
-            fetch = FetchType.LAZY)
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true)
     private List<CommentLike> likes;
 
     public Comment(User user, Post post, String text, LocalDateTime createdAt, Comment parentComment, boolean isSolution) {

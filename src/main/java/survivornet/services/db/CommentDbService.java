@@ -1,172 +1,98 @@
 package survivornet.services.db;
 
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.Hibernate;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import survivornet.DTO.CommentDTO;
 import survivornet.exceptions.InvalidIdException;
 import survivornet.models.Comment;
 import survivornet.models.CommentLike;
 import survivornet.models.Post;
 import survivornet.models.User;
-import survivornet.utils.Constants;
+import survivornet.projections.CommentLikesProjection;
+import survivornet.repositories.CommentLikeRepository;
+import survivornet.repositories.CommentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import static survivornet.utils.Constants.CHUNK_SIZE;
 
 @Service
 public class CommentDbService {
     private final UserDbService userDbService;
     private final PostDbService postDbService;
-    private final EntityManagerFactory entityManagerFactory;
+    private final CommentRepository commentRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
-    public CommentDbService(UserDbService userDbService, PostDbService postDbService) {
+    public CommentDbService(UserDbService userDbService, PostDbService postDbService, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository) {
         this.userDbService = userDbService;
         this.postDbService = postDbService;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+        this.commentRepository = commentRepository;
+        this.commentLikeRepository = commentLikeRepository;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Comment addComment(String username, long postId, String commentText, long parentId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = userDbService.getUserByUsername(username, entityManager);
-        Post post = postDbService.getPostById(postId, entityManager);
-        Comment comment;
-        Comment parent = null;
-        if(parentId != -1) {
-            parent = getCommentById(parentId, entityManager);
-        }
-        comment = new Comment(user, post, commentText, LocalDateTime.now(), parent, false);
-        entityManager.persist(comment);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return comment;
+        User user = userDbService.getUserByUsername(username);
+        Post post = postDbService.getPostById(postId);
+        Optional<Comment> parent = commentRepository.findById(parentId);
+        return commentRepository.save(new Comment(user, post, commentText, LocalDateTime.now(), parent.orElse(null), false));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Comment addSolution(String username, long postId, String solutionText) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = userDbService.getUserByUsername(username, entityManager);
-        Post post = postDbService.getPostById(postId, entityManager);
-        Comment comment = new Comment(user, post, solutionText, LocalDateTime.now(), null, true);
-        entityManager.persist(comment);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return comment;
+        User user = userDbService.getUserByUsername(username);
+        Post post = postDbService.getPostById(postId);
+        return commentRepository.save(new Comment(user, post, solutionText, LocalDateTime.now(),null, true));
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Comment getCommentById(long commentId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        Comment comment = getCommentById(commentId, entityManager);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return comment;
-    }
-
-    private Comment getCommentById(long commentId, EntityManager entityManager) {
-        Comment comment = entityManager.find(Comment.class, commentId);
-        if(comment == null) {
-            throw new InvalidIdException("Invalid comment id");
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if(comment.isPresent()) {
+            return comment.get();
         }
-        return comment;
-    }
-
-    public List<Comment> getPostComments(long postId, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        var comments = entityManager.createQuery("SELECT c from Comment c " +
-                "WHERE c.post.postId=:postId AND c.isSolution=FALSE", Comment.class)
-                .setParameter(Constants.POST_ID, postId)
-                .setFirstResult(chunk * 10)
-                .setMaxResults((chunk+1) * 10)
-                .getResultList();
-
-        comments.forEach(c -> Hibernate.initialize(c.getUser()));
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return comments;
+        throw new InvalidIdException("Invalid comment Id");
     }
 
 
-    public List<Comment> getPostSolutions(long postId, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        var solutions = entityManager.createQuery("SELECT c from Comment c " +
-                "WHERE c.post.postId=:postId AND c.isSolution=TRUE")
-                .setParameter(Constants.POST_ID, postId)
-                .setFirstResult(chunk * 10)
-                .setMaxResults((chunk+1) * 10)
-                .getResultList();
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return solutions;
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<CommentDTO> getPostComments(long postId, int chunk) {
+        return commentRepository.findAllCommentByPostId(postId, PageRequest.of(chunk, CHUNK_SIZE));
     }
 
-    public void addCommentLike(String username, long commentId, boolean likes) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<CommentDTO> getPostSolutions(long postId, int chunk) {
+        return commentRepository.findAllSolutionByPostId(postId, PageRequest.of(chunk, CHUNK_SIZE));
+    }
 
-        Comment comment = getCommentById(commentId, entityManager);
-
-        if(!hasUserLikedComment(username, commentId, entityManager)) {
-            User user = userDbService.getUserByUsername(username, entityManager);
-            CommentLike commentLike = new CommentLike(user, comment, likes);
-            entityManager.persist(commentLike);
+    public boolean addCommentLike(String username, long commentId, boolean isLike) {
+        Optional<CommentLike> like = commentLikeRepository.findByUsernameAndCommentId(username, commentId);
+        CommentLike commentLike;
+        if(like.isEmpty()) {
+            User user = userDbService.getUserByUsername(username);
+            Comment comment = getCommentById(commentId);
+            commentLike = new CommentLike(user, comment, isLike);
         }
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
+        else {
+            commentLike = like.get();
+            commentLike.setLike(isLike);
+        }
+        commentLikeRepository.save(commentLike);
+        return true;
     }
 
-
-    public long getCommentLikes(Long commentId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        Long likes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
-                "FROM CommentLike cl " +
-                "WHERE cl.comment.commentId=:commentId AND cl.isLike=TRUE")
-                .setParameter("commentId", commentId)
-                .getSingleResult();
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return likes;
+    public CommentLikesProjection getCommentLikesAndDislikes(long commentId) {
+        return commentLikeRepository.countCommentLikesAndDislikes(commentId);
     }
 
-    public long getCommentDislikes(Long commentId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        Long dislikes = (Long) entityManager.createQuery("SELECT COUNT(*) " +
-                "FROM CommentLike cl " +
-                "WHERE cl.comment.commentId=:commentId AND cl.isLike=FALSE")
-                .setParameter("commentId", commentId)
-                .getSingleResult();
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return dislikes;
-    }
-
-    private boolean hasUserLikedComment(String username, long commentId, EntityManager entityManager) {
-        return !entityManager.createQuery(
-                "SELECT cl FROM CommentLike cl " +
-                        "WHERE cl.user.username=:username AND cl.comment.commentId=:commentId")
-                .setParameter(Constants.USERNAME, username)
-                .setParameter(Constants.COMMENT_ID, commentId)
-                .getResultList()
-                .isEmpty();
+    private boolean hasUserLikedComment(String username, long commentId) {
+        return commentLikeRepository.findByUsernameAndCommentId(username, commentId).isPresent();
     }
 
 

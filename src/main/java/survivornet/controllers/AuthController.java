@@ -9,10 +9,10 @@ import survivornet.exceptions.InvalidIdException;
 import survivornet.exceptions.InvalidRequestParamsException;
 import survivornet.exceptions.UnauthorizedException;
 import survivornet.models.User;
-import survivornet.services.db.UserDbService;
+import survivornet.services.domain.UserService;
+import survivornet.utils.Constants;
 import survivornet.utils.JWTUtility;
 import survivornet.utils.Secret;
-import survivornet.utils.Constants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,10 +27,10 @@ import java.util.Objects;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
-    private final UserDbService userDbService;
+    private final UserService userService;
 
-    public AuthController(UserDbService userDbService) {
-        this.userDbService = userDbService;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("oath/github")
@@ -41,9 +41,9 @@ public class AuthController {
         String username = userInfo.get("login").getAsString();
         String email = userInfo.get("email").getAsString();
         try {
-            User user = userDbService.getUserByEmail(email);
+            User user = userService.getUserByEmail(email);
         } catch (InvalidIdException e) { // new User
-            userDbService.addUser(username, username, null, email, null, "");
+            userService.addUser(username, username, null, email, null, "");
         }
         return Map.of(Constants.STATUS, Constants.SUCCESS,
                 Constants.AUTHORIZATION, JWTUtility.generateToken(username),
@@ -63,7 +63,7 @@ public class AuthController {
         if (username == null || password == null) {
             throw new UnauthorizedException("Empty username or password");
         }
-        if (userDbService.authenticateByPassword(username, password)) {
+        if (userService.authenticateByPassword(username, password)) {
             var authToken = JWTUtility.generateToken(username);
             return Map.of(Constants.AUTHORIZATION, authToken,
                     Constants.STATUS, Constants.SUCCESS);
@@ -79,8 +79,7 @@ public class AuthController {
             String name = Objects.requireNonNull(body.get(Constants.NAME));
             String email = Objects.requireNonNull(body.get(Constants.EMAIL));
             Date birthDate = Date.valueOf(body.get(Constants.BIRTHDATE));
-
-            userDbService.addUser(username, name, password, email, birthDate, "");
+            userService.addUser(username, name, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
             return Map.of(Constants.STATUS, Constants.SUCCESS,
                     Constants.AUTHORIZATION, authToken);

@@ -4,254 +4,167 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import survivornet.DTO.UserDTO;
 import survivornet.exceptions.InvalidIdException;
 import survivornet.models.User;
+import survivornet.models.UserBlock;
+import survivornet.models.UserFollow;
+import survivornet.projections.FolloweeProjection;
+import survivornet.projections.FollowerProjection;
+import survivornet.repositories.BlockRepository;
+import survivornet.repositories.FollowRepository;
+import survivornet.repositories.UserRepository;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-import static survivornet.utils.Constants.*;
+import static survivornet.utils.Constants.CHUNK_SIZE;
 
 @Service
 public class UserDbService {
     private final EntityManagerFactory entityManagerFactory;
+    private final UserRepository userRepository;
+    private final FollowRepository followRepository;
+    private final BlockRepository blockRepository;
 
-
-    public UserDbService() {
+    @Autowired
+    public UserDbService(UserRepository userRepository, FollowRepository followRepository, BlockRepository blockRepository) {
+        this.userRepository = userRepository;
+        this.followRepository = followRepository;
+        this.blockRepository = blockRepository;
         var registry = new StandardServiceRegistryBuilder().configure().build();
         entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
 
-    public User addUser(@NotNull String username,
-                        @NotNull String name,
-                        @NotNull String password,
-                        @NotNull String email,
-                        Date birthDate,
-                        @NotNull String bio) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = new User(username, password, name, email, birthDate, Date.valueOf(LocalDate.now()), "", null, null);
-        entityManager.persist(user);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return user;
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public User addUser(
+            String username,
+            String name,
+            String password,
+            String email,
+            Date birthDate,
+            String bio) {
+        return persistUser(new User(username,
+                password,
+                name,
+                email,
+                birthDate,
+                Date.valueOf(LocalDate.now()),
+                bio,
+                null,
+                null));
     }
 
-    public User getUserById(Long userId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = getUserById(userId, entityManager);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return user;
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public User persistUser(User user) {
+        return this.userRepository.save(user);
     }
 
-    public User getUserById(Long userId, EntityManager entityManager) {
-        User user = entityManager.find(User.class, userId);
-        if(user == null) {
-            if(entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
-            entityManager.close();
-            throw new InvalidIdException("Invalid user Id");
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public User getUserById(long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isEmpty()) {
+            throw new InvalidIdException("Invalid user id");
         }
-        return user;
+        return user.get();
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public User getUserByUsername(String username) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = getUserByUsername(username, entityManager);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return user;
-    }
-
-    public User getUserByUsername(String username, EntityManager entityManager) {
-        var resultList = entityManager.createQuery(
-                "SELECT u FROM User u " +
-                        "WHERE u.username=:username", User.class)
-                .setParameter(USERNAME, username)
-                .getResultList();
-        if(resultList.isEmpty()) {
-            if(entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
-            entityManager.close();
-            throw new InvalidIdException("Invalid Username");
+        Optional<User> user = userRepository.findUserByUsername(username);
+        if(user.isEmpty()) {
+            throw new InvalidIdException("Invalid username");
         }
-        return resultList.get(0);
+        return user.get();
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public User getUserByEmail(String email) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = getUserByEmail(email, entityManager);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return user;
+        Optional<User> user = userRepository.findUserByEmail(email);
+        if(user.isEmpty()) {
+            throw new InvalidIdException("Invalid username");
+        }
+        return user.get();
     }
 
-    public User getUserByEmail(String email, EntityManager entityManager) {
-        List<User> resultList = entityManager.createQuery(
-                "SELECT u FROM User u " +
-                        "WHERE u.email=:email", User.class)
-                .setParameter(EMAIL, email)
-                .getResultList();
-        if(resultList.isEmpty()) {
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public boolean authenticateByPassword(String username, String password) {
+        Optional<User> user = userRepository.findUserByUsername(username);
+        return user.isPresent() && password.equals(user.get().getPassword());
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<User> getFollowers(String username, int chunk) {
+        return followRepository.findAllByFollowee(getUserByUsername(username), PageRequest.of(chunk, CHUNK_SIZE))
+                .stream().map(FollowerProjection::getFollower).toList();
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<User> getFollowings(String username, int chunk) {
+        return followRepository.findAllByFollower(getUserByUsername(username), PageRequest.of(chunk, CHUNK_SIZE))
+                .stream().map(FolloweeProjection::getFollowee).toList();
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public List<User> searchUsers(String query, int chunk) {
+        return userRepository.findAllByUsernameContainingOrNameContaining(query, query, PageRequest.of(chunk, CHUNK_SIZE));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public boolean changeFollow(String follower, String followee, boolean follow) {
+        if(follow) {
+            UserFollow userFollow = new UserFollow(getUserByUsername(follower), getUserByUsername(followee));
+            followRepository.save(userFollow);
+        }
+        else {
+            followRepository.deleteByFollowerAndFollowee(
+                    getUserByUsername(follower),
+                    getUserByUsername(followee));
+        }
+        return true;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean changeBlock(EntityManager entityManager, String blocker, String blockee, boolean block) {
+        if(block) {
+            UserBlock userFollow = new UserBlock(getUserByUsername(blocker), getUserByUsername(blockee));
+            blockRepository.save(userFollow);
+        }
+        else {
+            blockRepository.deleteByBlockerAndBlockee(blocker, blockee);
+        }
+        return true;
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
+    public boolean removeUser(String username) {
+        userRepository.deleteByUsername(username);
+        return true;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public UserDTO getUserDtoByUsername(String username) {
+        Optional<UserDTO> user = userRepository.getDtoByUsername(username);
+        if(user.isEmpty()) {
+            throw new InvalidIdException("Invalid username");
+        }
+        return user.get();
+    }
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public UserDTO getUserDtoByEmail(String email) {
+        Optional<UserDTO> user = userRepository.getDtoByEmail(email);
+        if(user.isEmpty()) {
             throw new InvalidIdException("Invalid email");
         }
-        return resultList.get(0);
-    }
-
-
-    public boolean authenticateByPassword(String username, String password) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        User user = getUserByUsername(username, entityManager);
-        boolean success = user.getPassword().equals(password);
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return success;
-    }
-
-    public List<User> getFollowers(String username, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        var followers = entityManager.createQuery(
-                "SELECT u.followers FROM User u " +
-                "WHERE u.username=:username", User.class)
-                .setParameter(USERNAME, username)
-                .setFirstResult(chunk*CHUNK_SIZE)
-                .setMaxResults((chunk+1)*CHUNK_SIZE)
-                .getResultList();
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return followers;
-    }
-
-    public List<User> getFollowings(String username, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        var followings = entityManager.createQuery(
-                "SELECT u.followings FROM User u " +
-                        "WHERE u.username=:username", User.class)
-                .setParameter(USERNAME, username)
-                .setFirstResult(chunk*CHUNK_SIZE)
-                .setMaxResults((chunk+1)*CHUNK_SIZE)
-                .getResultList();
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return followings;
-    }
-
-    public List<User> searchUsers(String query, int chunk) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-        List<User> resultList = entityManager.createQuery(
-                "SELECT u FROM User u " +
-                        "WHERE u.username LIKE CONCAT('%', :query, '%') " +
-                        "OR u.name LIKE CONCAT('%', :query, '%') " +
-                        "OR u.email LIKE CONCAT('%', :query, '%') ", User.class)
-                .setParameter(QUERY, query)
-                .setFirstResult(chunk*CHUNK_SIZE)
-                .setMaxResults((chunk+1)*CHUNK_SIZE)
-                .getResultList();
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return resultList;
-    }
-
-    public void changeFollow(String follower, String followee, boolean follow) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        User followerUser = getUserByUsername(follower, entityManager);
-        User followeeUser = getUserByUsername(followee, entityManager);
-
-        try {
-            // one way is enough to store both ways!
-            if(follow && !followeeUser.getBlockList().contains(followerUser)) {
-                followerUser.getFollowings().add(followeeUser);
-            }
-            else {
-                followerUser.getFollowings().remove(followeeUser);
-            }
-            entityManager.getTransaction().commit();
-            entityManager.close();
-        }
-        catch (Exception e) {
-            entityManager.getTransaction().rollback();
-            entityManager.close();
-        }
-    }
-
-    public void changeBlock(String blocker, String blockee, boolean block) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        User blockerUser = getUserByUsername(blocker, entityManager);
-        User blockeeUser = getUserByUsername(blockee, entityManager);
-
-        try {
-            // one way is enough to store both ways!
-            if(block) {
-                blockerUser.getFollowings().remove(blockeeUser);
-                blockeeUser.getFollowings().remove(blockerUser);
-                blockerUser.getBlockList().add(blockeeUser);
-            }
-            else {
-                blockerUser.getBlockList().remove(blockeeUser);
-            }
-            entityManager.getTransaction().commit();
-            entityManager.close();
-        }
-        catch (Exception e) {
-            entityManager.getTransaction().rollback();
-            entityManager.close();
-            throw e;
-        }
-    }
-
-
-
-    public void removeUser(String username) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        User user = getUserByUsername(username, entityManager);
-        user.getPictures().clear();
-        user.setProfilePic(null);
-        user.setBackgroundPic(null);
-
-        entityManager.createQuery("DELETE FROM Picture p WHERE p.owner.userId=:userId")
-                .setParameter(USER_ID, user.getUserId())
-                .executeUpdate();
-
-        entityManager.createQuery("DELETE FROM CommentLike cl WHERE cl.user.userId=:userId")
-                .setParameter(USER_ID, user.getUserId())
-                .executeUpdate();
-
-        entityManager.createQuery("DELETE FROM Comment c WHERE c.user.userId=:userId")
-                .setParameter(USER_ID, user.getUserId())
-                .executeUpdate();
-
-        entityManager.createQuery("DELETE FROM PostReaction pr WHERE pr.user.userId=:userId")
-                .setParameter(USER_ID, user.getUserId())
-                .executeUpdate();
-
-        entityManager.createQuery("DELETE FROM Post p WHERE p.user.userId=:userId")
-                .setParameter(USER_ID, user.getUserId())
-                .executeUpdate();
-
-
-        entityManager.remove(user);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
+        return user.get();
     }
 }

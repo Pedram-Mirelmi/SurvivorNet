@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("{username}/posts")
-    public List<PostDTO> getUserProfile(
+    public List<PostDTO> getUserPosts(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
             @PathVariable(Constants.USERNAME) String username,
             @RequestParam(Constants.CHUNK) int chunk) throws InvalidValueException, UnauthorizedException {
@@ -71,31 +71,31 @@ public class UserController {
     public Map<String, Object> followUser(@PathVariable(Constants.USERNAME) String followee,
                                           @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        boolean success = userService.addFollow(username, followee);
+        boolean success = userService.changeFollow(username, followee, true);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
     @DeleteMapping("follow/{username}")
     public Map<String, Object> unfollowUser(@PathVariable(Constants.USERNAME) String followee,
-                                          @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
+                                            @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        boolean success = userService.removeFollow(username, followee);
+        boolean success = userService.changeBlock(username, followee, false);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
     @PostMapping("block/{username}")
     public Map<String, Object> block(@PathVariable(Constants.USERNAME) String blockee,
-                                          @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
+                                     @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        boolean success = userService.addBlock(username, blockee);
+        boolean success = userService.changeBlock(username, blockee, true);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
     @DeleteMapping("block/{username}")
     public Map<String, Object> unblock(@PathVariable(Constants.USERNAME) String blockee,
-                                            @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
+                                       @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        boolean success = userService.removeBlock(username, blockee);
+        boolean success = userService.changeBlock(username, blockee, true);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
     @GetMapping("search")

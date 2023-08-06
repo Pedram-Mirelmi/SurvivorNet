@@ -1,82 +1,57 @@
 package survivornet.services.db;
 
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import survivornet.models.Picture;
 import survivornet.models.Post;
 import survivornet.models.User;
+import survivornet.repositories.PictureRepository;
 
 @Service
 public class PictureDbService {
     private final UserDbService userDbService;
     private final PostDbService postDbService;
-    private final EntityManagerFactory entityManagerFactory;
+    private final PictureRepository pictureRepository;
 
 
-    public PictureDbService(UserDbService userDbService, PostDbService postDbService) {
+
+    public PictureDbService(UserDbService userDbService, PostDbService postDbService, PictureRepository pictureRepository) {
         this.userDbService = userDbService;
         this.postDbService = postDbService;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+        this.pictureRepository = pictureRepository;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Picture addPictureForProfile(String username) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        User user = userDbService.getUserByUsername(username, entityManager);
+        User user = userDbService.getUserByUsername(username);
         if(user.getProfilePic() != null) {
-            entityManager.remove(user.getProfilePic());
+            pictureRepository.delete(user.getProfilePic());
         }
-
-        Picture picture = new Picture(user, null);
-        user.setProfilePic(picture);
-
-        entityManager.persist(picture);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return picture;
+        Picture newPicture = pictureRepository.save(new Picture(user, null));
+        user.setProfilePic(newPicture);
+        userDbService.persistUser(user);
+        return newPicture;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Picture addBackgroundPictureForProfile(String username) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        User user = userDbService.getUserByUsername(username, entityManager);
+        User user = userDbService.getUserByUsername(username);
         if(user.getBackgroundPic() != null) {
-            entityManager.remove(user.getBackgroundPic());
+            pictureRepository.delete(user.getBackgroundPic());
         }
-
-        Picture picture = new Picture(user, null);
-        user.setBackgroundPic(picture);
-
-        entityManager.persist(picture);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-
-        return picture;
+        Picture newPicture = pictureRepository.save(new Picture(user, null));
+        user.setBackgroundPic(newPicture);
+        userDbService.persistUser(user);
+        return newPicture;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Picture addPicturePost(long postId) {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        entityManager.getTransaction().begin();
-
-        Post post = postDbService.getPostById(postId, entityManager);
-        User user = post.getUser();
-        Picture picture = new Picture(user, post);
-        post.getPictures().add(picture);
-        entityManager.persist(picture);
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
-        return picture;
+        Post post = postDbService.getPostById(postId);
+        return pictureRepository.save(new Picture(post.getUser(), post));
     }
 
 
