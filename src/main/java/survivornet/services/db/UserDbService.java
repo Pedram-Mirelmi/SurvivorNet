@@ -53,8 +53,20 @@ public class UserDbService {
             @NotNull String email,
             Date birthDate,
             @NotNull String bio) {
-        User user = new User(username, password, name, email, birthDate, Date.valueOf(LocalDate.now()), bio, null, null);
-        return userRepository.save(user);
+        return persistUser(new User(username,
+                password,
+                name,
+                email,
+                birthDate,
+                Date.valueOf(LocalDate.now()),
+                bio,
+                null,
+                null));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public User persistUser(User user) {
+        return this.userRepository.save(user);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

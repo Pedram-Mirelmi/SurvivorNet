@@ -1,8 +1,5 @@
 package survivornet.services.db;
 
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -28,7 +25,6 @@ import static survivornet.utils.Constants.CHUNK_SIZE;
 public class PostDbService {
     private final UserDbService userDbService;
     private final PostRepository postRepository;
-    private final EntityManagerFactory entityManagerFactory;
     private final CommentRepository commentRepository;
     private final PostReactionRepository postReactionRepository;
 
@@ -38,8 +34,6 @@ public class PostDbService {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.postReactionRepository = postReactionRepository;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
 
 

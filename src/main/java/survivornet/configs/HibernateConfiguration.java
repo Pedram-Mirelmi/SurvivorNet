@@ -29,11 +29,11 @@ public class HibernateConfiguration {
         emf.setJpaVendorAdapter(adapter);
         return emf;
     }
-
-    @Bean
-    public EntityManagerFactory myEntityManagerFactory(LocalContainerEntityManagerFactoryBean entityManagerFactoryBean) {
-        return entityManagerFactoryBean.getObject();
-    }
+//
+//    @Bean
+//    public EntityManagerFactory myEntityManagerFactory(LocalContainerEntityManagerFactoryBean entityManagerFactoryBean) {
+//        return entityManagerFactoryBean.getObject();
+//    }
 
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {

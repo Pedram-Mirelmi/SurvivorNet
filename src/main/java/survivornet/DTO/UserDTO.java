@@ -67,4 +67,12 @@ public class UserDTO {
     public long getBackgroundPicId() {
         return backgroundPicId;
     }
+
+    public long getNumberOfFollowers() {
+        return numberOfFollowers;
+    }
+
+    public long getNumberOfFollowings() {
+        return numberOfFollowings;
+    }
 }

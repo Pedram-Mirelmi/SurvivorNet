@@ -1,6 +1,7 @@
 package survivornet.services;
 
 
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,20 +32,25 @@ public class PictureTests {
 
     @Autowired
     private final PictureDbService pictureDbService;
+
+    @Autowired
+    private final EntityManagerFactory entityManagerFactory;
     
     private User integrationTestUser1;
     private Post integrationUser1Post1;
 
     @Autowired
-    public PictureTests(UserDbService userService, PostDbService postDbService, PictureDbService pictureDbService) {
+    public PictureTests(UserDbService userService, PostDbService postDbService, PictureDbService pictureDbService, EntityManagerFactory entityManagerFactory) {
         this.userDbService = userService;
         this.postDbService = postDbService;
         this.pictureDbService = pictureDbService;
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll
     void setUp() {
-        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+        integrationTestUser1 = userDbService.addUser(
+                "integrationTestUser1",
                 "integrationTestUser1Name",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",

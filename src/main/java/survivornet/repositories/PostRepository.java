@@ -22,8 +22,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<PostDTO> findAllDtoByUsername(String username, Pageable pageable);
 
     @Query("SELECT NEW survivornet.DTO.PostDTO(p, " +
-            "   (SELECT COUNT (*) FROM Comment c WHERE c.post.postId=:postId)," +
-            "   (SELECT COUNT (*) FROM PostReaction pr WHERE pr.post.postId=:postId)," +
+            "   (SELECT COUNT (*) FROM Comment c WHERE c.post.postId=:postId), " +
+            "   (SELECT COUNT (*) FROM PostReaction pr WHERE pr.post.postId=:postId), " +
             "   p.parent.postId) " +
             "FROM Post p " +
             "WHERE p.postId=:postId")

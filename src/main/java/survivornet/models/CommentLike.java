@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "comment_likes",
         schema = "public",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "comment_id"})},
         indexes = {@Index(columnList = "comment_id", name = "like_comment_index")})
 public class CommentLike {
     @Id
@@ -47,5 +48,9 @@ public class CommentLike {
 
     public boolean isLike() {
         return isLike;
+    }
+
+    public void setLike(boolean like) {
+        isLike = like;
     }
 }

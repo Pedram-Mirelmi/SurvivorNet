@@ -1,6 +1,7 @@
 package survivornet.services;
 
 
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import survivornet.DTO.CommentDTO;
 import survivornet.exceptions.UnauthorizedException;
 import survivornet.models.Post;
 import survivornet.models.User;
+import survivornet.projections.CommentLikesProjection;
 import survivornet.services.db.CommentDbService;
 import survivornet.services.db.PostDbService;
 import survivornet.services.db.UserDbService;
@@ -37,6 +39,9 @@ public class CommentControllerTests {
     @Autowired
     private final CommentService commentService;
 
+    @Autowired
+    private final EntityManagerFactory entityManagerFactory;
+
     private User integrationTestUser1;
     private User integrationTestUser2;
 
@@ -47,22 +52,25 @@ public class CommentControllerTests {
     private CommentDTO solution1;
 
     @Autowired
-    public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService) {
+    public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService, EntityManagerFactory entityManagerFactory) {
         this.commentDbService = commentDbService;
         this.userDbService = userDbService;
         this.commentService = commentService;
         this.postDbService = postDbService;
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll
     void setUp() {
-        integrationTestUser1 = userDbService.addUser("integrationTestUser1",
+        integrationTestUser1 = userDbService.addUser(
+                "integrationTestUser1",
                 "integrationTestUser1Name",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is integrationTestUser1");
-        integrationTestUser2 = userDbService.addUser("integrationTestUser2",
+        integrationTestUser2 = userDbService.addUser(
+                "integrationTestUser2",
                 "integrationTestUser2Name",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
@@ -113,8 +121,17 @@ public class CommentControllerTests {
     @Test
     @Order(2)
     void likeComment() {
-        assertEquals(0, commentDbService.getCommentLikes(comment1.getCommentId()));
+        CommentLikesProjection likes = commentDbService.getCommentLikesAndDislikes(comment1.getCommentId());
+        assertEquals(0, likes.getLikes());
+        assertEquals(0, likes.getDislikes());
         commentService.likeComment(integrationTestUser1.getUsername(), comment1.getCommentId(), true);
-        assertEquals(1, commentDbService.getCommentLikes(comment1.getCommentId()));
+        commentService.likeComment(integrationTestUser1.getUsername(), comment1.getCommentId(), true);
+        likes = commentDbService.getCommentLikesAndDislikes(comment1.getCommentId());
+        assertEquals(1, likes.getLikes());
+        assertEquals(0, likes.getDislikes());
+        commentService.likeComment(integrationTestUser1.getUsername(), comment1.getCommentId(), false);
+        likes = commentDbService.getCommentLikesAndDislikes(comment1.getCommentId());
+        assertEquals(0, likes.getLikes());
+        assertEquals(1, likes.getDislikes());
     }
 }
