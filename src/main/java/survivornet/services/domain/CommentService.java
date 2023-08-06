@@ -50,7 +50,7 @@ public class CommentService {
                 0);
     }
 
-    public void likeComment(String username, long commentId, boolean likes) {
-        commentDbService.addCommentLike(username, commentId, likes);
+    public boolean likeComment(String username, long commentId, boolean likes) {
+        return commentDbService.addCommentLike(username, commentId, likes);
     }
 }

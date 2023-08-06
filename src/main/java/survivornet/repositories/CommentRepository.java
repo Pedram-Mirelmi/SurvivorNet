@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import survivornet.DTO.CommentDTO;
 import survivornet.models.Comment;
-import survivornet.projections.CommentLikesProjection;
 
 import java.util.List;
 
@@ -29,7 +28,4 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "FROM Comment c " +
             "WHERE c.post.postId=:postId AND c.isSolution=TRUE")
     List<CommentDTO> findAllSolutionByPostId(long postId, Pageable of);
-
-
-
 }

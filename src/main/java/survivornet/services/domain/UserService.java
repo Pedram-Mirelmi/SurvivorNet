@@ -51,16 +51,15 @@ public class UserService {
         if(!authorizationService.canViewFollowList(viewerUsername, username)) {
             throw new UnauthorizedException("User cannot access other user's any follow list");
         }
-        // TODO fix number of followers
         return userDbService.getFollowings(username, chunk)
                 .stream()
                 .map(user -> new UserDTO(user, 0, 0))
                 .toList();
     }
 
-    public boolean addFollow(String follower, String followee) {
+    public boolean changeFollow(String follower, String followee, boolean follow) {
         try {
-            userDbService.changeFollow(follower, followee, true);
+            userDbService.changeFollow(follower, followee, follow);
             return true;
         }
         catch (Exception e) {
@@ -68,35 +67,15 @@ public class UserService {
         }
     }
 
-    public boolean removeFollow(String follower, String followee) {
-        try {
-            userDbService.changeFollow(follower, followee, false);
-            return true;
-        }
-        catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean addBlock(String blocker, String blockee) {
-        try {
-            userDbService.changeFollow(blocker, blockee, true);
-            return true;
-        }
-        catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean removeBlock(String blocker, String blockee) {
-        try {
-            userDbService.changeFollow(blocker, blockee, false);
-            return true;
-        }
-        catch (Exception e) {
-            return false;
-        }
-    }
+   public boolean changeBlock(String blocker, String blockee, boolean clock) {
+       try {
+           userDbService.changeFollow(blocker, blockee, true);
+           return true;
+       }
+       catch (Exception e) {
+           return false;
+       }
+   }
 
     public List<UserDTO> searchUsers(String query, int chunk) {
         return userDbService.searchUsers(query, chunk).stream().map(user -> new UserDTO(user, 0, 0)).toList();

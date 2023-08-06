@@ -30,16 +30,12 @@ class UserControllerTests {
     @Autowired
     UserDbService userDbService;
 
-    @Autowired
-    private final EntityManagerFactory entityManagerFactory;
-
     private User integrationTestUser1;
     private User integrationTestUser2;
 
     @Autowired
-    public UserControllerTests(UserService userService, EntityManagerFactory entityManagerFactory) {
+    public UserControllerTests(UserService userService) {
         this.userService = userService;
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     @AfterAll
@@ -52,7 +48,6 @@ class UserControllerTests {
     @BeforeAll
     void setUp() throws ParseException {
 
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
         integrationTestUser1 = userDbService.addUser(
                 "integrationTestUser1",
                 "integrationTestUser1Name",
@@ -94,7 +89,7 @@ class UserControllerTests {
     @Test
     @Order(2)
     void addFollowing() {
-        userService.addFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
+        userService.changeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername(), true);
     }
 
     @Test
@@ -118,7 +113,7 @@ class UserControllerTests {
     @Test
     @Order(4)
     void testRemoveFollow() {
-        userService.removeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername());
+        userService.changeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername(), false);
     }
 
 

@@ -70,9 +70,9 @@ public class PostController {
             @PathVariable(Constants.POST_ID) long postId,
             @RequestParam(Constants.REACTION_TYPE) int reactionType) throws UnauthorizedException {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
-        postService.addReaction(username, postId, reactionType);
+        boolean success = postService.addReaction(username, postId, reactionType);
         return Map.of(
-                Constants.STATUS, Constants.SUCCESS
+                Constants.STATUS, success
         );
     }
 

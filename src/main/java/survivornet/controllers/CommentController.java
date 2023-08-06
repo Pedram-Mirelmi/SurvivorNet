@@ -55,11 +55,24 @@ public class CommentController {
                 parentId);
     }
 
+    @PostMapping("comments/{commentId}/likes")
+    public Map<String, Object> likeComment(
+            @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
+            @PathVariable(Constants.COMMENT_ID) long commentId,
+            @RequestParam(Constants.LIKES) boolean likes) {
+        boolean success = commentService.likeComment(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                commentId,
+                likes);
+        return Map.of(Constants.STATUS, success);
+    }
+
+
     @GetMapping("solutions")
     public List<CommentDTO> getSolutions(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
-            @RequestParam(value = Constants.CHUNK, required = false)Optional<Integer> chunk) throws UnauthorizedException {
+            @RequestParam Optional<Integer> chunk) throws UnauthorizedException {
         return commentService.getPostSolutions(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 postId,
@@ -81,5 +94,17 @@ public class CommentController {
         return commentService.addSolution(JWTUtility.getUsernameFromToken(jwtToken),
                 postId,
                 solutionText);
+    }
+
+    @PostMapping("solutions/{commentId}/likes")
+    public Map<String, Object> likeSolution(
+            @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
+            @PathVariable(Constants.COMMENT_ID) long commentId,
+            @RequestParam(Constants.LIKES) boolean likes) {
+        boolean success = commentService.likeComment(
+                JWTUtility.getUsernameFromToken(jwtToken),
+                commentId,
+                likes);
+        return Map.of(Constants.STATUS, success);
     }
 }

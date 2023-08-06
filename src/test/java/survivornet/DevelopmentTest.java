@@ -41,7 +41,7 @@ public class DevelopmentTest {
 
     @Test
     void test() {
-        userService.removeFollow("integrationTestUser1", "integrationTestUser2");
+        userService.changeFollow("integrationTestUser1", "integrationTestUser2", true);
     }
 
 

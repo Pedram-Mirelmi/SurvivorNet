@@ -3,7 +3,6 @@ package survivornet.services.domain;
 import org.springframework.stereotype.Service;
 import survivornet.DTO.PostDTO;
 import survivornet.DTO.PostReactionDTO;
-import survivornet.exceptions.InvalidValueException;
 import survivornet.exceptions.UnauthorizedException;
 import survivornet.models.Post;
 import survivornet.services.AuthorizationService;
@@ -22,10 +21,7 @@ public class PostService {
         this.authorizationService = authorizationService;
     }
 
-    public List<PostDTO> getHomePosts(String username, int chunk) throws InvalidValueException {
-        if (chunk < 0) {
-            throw new InvalidValueException("Invalid negative chunk value");
-        }
+    public List<PostDTO> getHomePosts(String username, int chunk) {
         return postDbService.getUserHomePostDTOs(username, chunk);
     }
 
@@ -52,11 +48,11 @@ public class PostService {
         return postDbService.getUserPostDTOs(underViewUsername, chunk);
     }
 
-    public void addReaction(String username, long postId, int reactionType) throws UnauthorizedException {
+    public boolean addReaction(String username, long postId, int reactionType) throws UnauthorizedException {
         if(!authorizationService.canAddReaction(username, postId)) {
             throw new UnauthorizedException("User cannot add reaction to this post");
         }
-        postDbService.addPostReaction(username, postId, reactionType);
+        return postDbService.addPostReaction(username, postId, reactionType);
     }
 
     public List<PostReactionDTO> getReactions(String username, long postId, int chunk) throws UnauthorizedException {

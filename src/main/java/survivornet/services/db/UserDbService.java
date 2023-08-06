@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static survivornet.utils.Constants.*;
+import static survivornet.utils.Constants.CHUNK_SIZE;
 
 @Service
 public class UserDbService {
@@ -47,12 +46,12 @@ public class UserDbService {
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public User addUser(
-            @NotNull String username,
-            @NotNull String name,
-            @NotNull String password,
-            @NotNull String email,
+            String username,
+            String name,
+            String password,
+            String email,
             Date birthDate,
-            @NotNull String bio) {
+            String bio) {
         return persistUser(new User(username,
                 password,
                 name,
@@ -120,7 +119,7 @@ public class UserDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void changeFollow(String follower, String followee, boolean follow) {
+    public boolean changeFollow(String follower, String followee, boolean follow) {
         if(follow) {
             UserFollow userFollow = new UserFollow(getUserByUsername(follower), getUserByUsername(followee));
             followRepository.save(userFollow);
@@ -130,10 +129,11 @@ public class UserDbService {
                     getUserByUsername(follower),
                     getUserByUsername(followee));
         }
+        return true;
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public void changeBlock(EntityManager entityManager, String blocker, String blockee, boolean block) {
+    public boolean changeBlock(EntityManager entityManager, String blocker, String blockee, boolean block) {
         if(block) {
             UserBlock userFollow = new UserBlock(getUserByUsername(blocker), getUserByUsername(blockee));
             blockRepository.save(userFollow);
@@ -141,12 +141,14 @@ public class UserDbService {
         else {
             blockRepository.deleteByBlockerAndBlockee(blocker, blockee);
         }
+        return true;
     }
 
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.SERIALIZABLE)
-    public void removeUser(String username) {
+    public boolean removeUser(String username) {
         userRepository.deleteByUsername(username);
+        return true;
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
