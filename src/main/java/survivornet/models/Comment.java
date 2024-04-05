@@ -55,6 +55,12 @@ public class Comment {
 
     }
 
+    @PrePersist
+    public void prePersist() {
+        if(createdAt == null)
+            createdAt = LocalDateTime.now();
+    }
+
     public Long getCommentId() {
         return commentId;
     }

@@ -3,6 +3,8 @@ package survivornet.models;
 
 import jakarta.persistence.*;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class Post {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -32,10 +34,6 @@ public class Post {
     @ManyToOne(targetEntity = Post.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "parentId", referencedColumnName = "post_id")
     private Post parent;
-
-//    @OneToMany(targetEntity = Post.class, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "post_id", referencedColumnName = "parentId")
-//    private List<Post> children;
 
     @OneToMany(fetch = FetchType.EAGER,
             mappedBy = "post",
@@ -67,6 +65,13 @@ public class Post {
         this.createdAt = createdAt;
         this.parent = parent;
     }
+
+    @PrePersist
+    public void prePersist() {
+        if(createdAt == null)
+            createdAt = LocalDateTime.now();
+    }
+
 
     public Long getPostId() {
         return postId;

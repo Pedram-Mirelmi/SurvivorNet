@@ -31,9 +31,6 @@ public class PostControllerTests {
 
     @Autowired
     private final PostService postService;
-
-    @Autowired
-    private final EntityManagerFactory entityManagerFactory;
     
     private User integrationTestUser1;
     private User integrationTestUser2;
@@ -44,10 +41,9 @@ public class PostControllerTests {
     private PostDTO integrationUser2Post1;
 
     @Autowired
-    public PostControllerTests(PostService postService, UserDbService userDbService, EntityManagerFactory entityManagerFactory) {
+    public PostControllerTests(PostService postService, UserDbService userDbService) {
         this.postService = postService;
         this.userDbService = userDbService;
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll

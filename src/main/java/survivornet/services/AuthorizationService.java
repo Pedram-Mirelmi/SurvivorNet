@@ -1,8 +1,5 @@
 package survivornet.services;
 
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +12,6 @@ import survivornet.services.db.UserDbService;
 @Service
 public class AuthorizationService {
 
-    private final EntityManagerFactory entityManagerFactory;
 
     private final UserDbService userDbService;
     private final PostDbService postDbService;
@@ -25,8 +21,6 @@ public class AuthorizationService {
         this.userDbService = userDbService;
         this.postDbService = postDbService;
         this.blockRepository = blockRepository;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
