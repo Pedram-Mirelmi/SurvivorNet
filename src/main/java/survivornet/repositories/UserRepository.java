@@ -22,6 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "   (SELECT COUNT (*) FROM UserFollow uf_2 WHERE uf_2.follower.username=:username)) " +
             "FROM survivornet.models.User u " +
             "WHERE u.username=:username")
+
     Optional<UserDTO> getDtoByUsername(String username);
 
     void deleteByUsername(String username);

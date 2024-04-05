@@ -30,7 +30,6 @@ import static survivornet.utils.Constants.CHUNK_SIZE;
 
 @Service
 public class UserDbService {
-    private final EntityManagerFactory entityManagerFactory;
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final BlockRepository blockRepository;
@@ -40,8 +39,6 @@ public class UserDbService {
         this.userRepository = userRepository;
         this.followRepository = followRepository;
         this.blockRepository = blockRepository;
-        var registry = new StandardServiceRegistryBuilder().configure().build();
-        entityManagerFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)

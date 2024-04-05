@@ -24,16 +24,11 @@ public class HibernateConfiguration {
         emf.setDataSource(dataSource);
         emf.setPackagesToScan("survivornet.models");
         HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
-        adapter.setDatabasePlatform("org.hibernate.dialect.PostgreSQLDialect");
+        adapter.setDatabasePlatform("org.hibernate.dialect.MySQL8Dialect");
         adapter.setShowSql(true);
         emf.setJpaVendorAdapter(adapter);
         return emf;
     }
-//
-//    @Bean
-//    public EntityManagerFactory myEntityManagerFactory(LocalContainerEntityManagerFactoryBean entityManagerFactoryBean) {
-//        return entityManagerFactoryBean.getObject();
-//    }
 
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {

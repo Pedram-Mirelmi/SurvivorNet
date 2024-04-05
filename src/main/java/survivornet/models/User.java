@@ -3,6 +3,7 @@ package survivornet.models;
 import jakarta.persistence.*;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -107,6 +108,12 @@ public class User {
     }
 
     public User() {
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if(joinedAt == null)
+            joinedAt = Date.valueOf(LocalDate.now());
     }
 
     public Long getUserId() {
