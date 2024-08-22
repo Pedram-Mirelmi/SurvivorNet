@@ -14,17 +14,19 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT NEW survivornet.DTO.PostDTO(p, " +
-            "   (SELECT COUNT (*) FROM Comment c WHERE c.post.postId=p.postId)," +
-            "   (SELECT COUNT (*) FROM PostReaction pr WHERE pr.post.postId=p.postId)," +
-            "   p.parent.postId) " +
+            "   (SELECT COUNT (c) FROM Comment c WHERE c.post.postId=p.postId)," +
+            "   (SELECT COUNT (pr) FROM PostReaction pr WHERE pr.post.postId=p.postId)," +
+            "   p.parent.postId," +
+            "   p.parent.title) " +
             "FROM Post p " +
             "WHERE p.user.username=:username")
     List<PostDTO> findAllDtoByUsername(String username, Pageable pageable);
 
     @Query("SELECT NEW survivornet.DTO.PostDTO(p, " +
-            "   (SELECT COUNT (*) FROM Comment c WHERE c.post.postId=:postId), " +
-            "   (SELECT COUNT (*) FROM PostReaction pr WHERE pr.post.postId=:postId), " +
-            "   p.parent.postId) " +
+            "   (SELECT COUNT (c) FROM Comment c WHERE c.post.postId=:postId), " +
+            "   (SELECT COUNT (pr) FROM PostReaction pr WHERE pr.post.postId=:postId), " +
+            "   p.parent.postId," +
+            "   p.parent.title) " +
             "FROM Post p " +
             "WHERE p.postId=:postId")
     Optional<PostDTO> getDtoById(long postId);
@@ -33,11 +35,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT NEW survivornet.DTO.PostDTO(p, "+
             "   (SELECT COUNT (c) FROM Comment c WHERE c.post.postId=p.postId)," +
             "   (SELECT COUNT (pr) FROM PostReaction pr WHERE pr.post.postId=p.postId)," +
-            "   p.parent.postId) " +
+            "   p.parent.postId, " +
+            "   p.parent.title) " +
             "FROM Post p " +
             "WHERE p.user.userId IN " +
             "    (SELECT uf.followee.userId FROM UserFollow uf" +
-            "    WHERE uf.follower.username=:username)" +
+            "    WHERE uf.follower.username=:username) " +
+            "OR p.user.userId IN " +
+            "   (SELECT u.userId FROM User u " +
+            "   WHERE u.username=:username) " +
             "ORDER BY p.createdAt DESC ")
     List<PostDTO> findAllHomePostDtoByUsername(String username, Pageable pageable);
 

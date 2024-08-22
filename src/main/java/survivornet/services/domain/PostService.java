@@ -38,7 +38,8 @@ public class PostService {
         return new PostDTO(post,
                 0,
                 0,
-                post.getParent() == null ? -1 : post.getParent().getPostId());
+                post.getParent() == null ? -1 : post.getParent().getPostId(),
+                post.getParent() == null ? null : post.getParent().getTitle());
     }
 
     public List<PostDTO> getUserPosts(String viewerUsername, String underViewUsername, int chunk) throws UnauthorizedException {

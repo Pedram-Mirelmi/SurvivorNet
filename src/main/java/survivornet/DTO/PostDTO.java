@@ -17,6 +17,8 @@ public class PostDTO {
 
     private final Long parentId;
 
+    private final String parentTitle;
+
     private final LocalDateTime createdAt;
 
     private final List<Long> pictures;
@@ -25,7 +27,7 @@ public class PostDTO {
 
     private final Long numberOfReactions;
 
-    public PostDTO(Post post, long commentCount, long reactionCount, Long parentId) {
+    public PostDTO(Post post, long commentCount, long reactionCount, Long parentId, String parentTitle) {
         this.postId = post.getPostId();
         this.user = new UserDTO(post.getUser(), 0, 0);
         this.title = post.getTitle();
@@ -35,6 +37,7 @@ public class PostDTO {
         this.pictures = post.getPictures() == null ? null : post.getPictures().stream().map(Picture::getPictureId).toList();
         this.numberOfComments = (long)commentCount;
         this.numberOfReactions = (long)reactionCount;
+        this.parentTitle = parentTitle;
     }
 
     public Long getNumberOfComments() {
@@ -61,8 +64,12 @@ public class PostDTO {
         return caption;
     }
 
-    public long getParentId() {
+    public Long getParentId() {
         return parentId;
+    }
+
+    public String getParentTitle() {
+        return parentTitle;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -72,4 +79,5 @@ public class PostDTO {
     public List<Long> getPictures() {
         return pictures;
     }
+
 }
