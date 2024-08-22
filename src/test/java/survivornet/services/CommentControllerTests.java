@@ -17,6 +17,7 @@ import survivornet.services.db.PostDbService;
 import survivornet.services.db.UserDbService;
 import survivornet.services.domain.CommentService;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,9 +40,6 @@ public class CommentControllerTests {
     @Autowired
     private final CommentService commentService;
 
-    @Autowired
-    private final EntityManagerFactory entityManagerFactory;
-
     private User integrationTestUser1;
     private User integrationTestUser2;
 
@@ -52,26 +50,27 @@ public class CommentControllerTests {
     private CommentDTO solution1;
 
     @Autowired
-    public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService, EntityManagerFactory entityManagerFactory) {
+    public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService) {
         this.commentDbService = commentDbService;
         this.userDbService = userDbService;
         this.commentService = commentService;
         this.postDbService = postDbService;
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll
-    void setUp() {
+    void setUp() throws SQLIntegrityConstraintViolationException {
         integrationTestUser1 = userDbService.addUser(
                 "integrationTestUser1",
-                "integrationTestUser1Name",
+                "integrationTestUser1FName",
+                "integrationTestUser1LName",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is integrationTestUser1");
         integrationTestUser2 = userDbService.addUser(
                 "integrationTestUser2",
-                "integrationTestUser2Name",
+                "integrationTestUser2FName",
+                "integrationTestUser2LName",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
                 null,

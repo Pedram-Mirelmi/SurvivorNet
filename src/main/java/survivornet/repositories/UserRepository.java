@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserByEmail(String email);
 
-    List<User> findAllByUsernameContainingOrNameContaining(String query1, String query2, Pageable pageable);
+    List<User> findAllByUsernameContainingOrFirstnameContainingOrLastnameContaining(String username, String firstname, String lastname, Pageable pageable);
 
     @Query(value = "SELECT NEW survivornet.DTO.UserDTO(u, " +
             "   (SELECT COUNT (*) FROM UserFollow uf_1 WHERE uf_1.followee.username=:username ), " +

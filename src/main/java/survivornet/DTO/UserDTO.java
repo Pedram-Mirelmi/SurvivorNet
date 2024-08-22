@@ -7,7 +7,8 @@ import java.sql.Date;
 public class UserDTO {
     private final long userId;
     private final String username;
-    private final String name;
+    private final String firstname;
+    private final String lastname;
     private final String email;
     private final Date birthDate;
     private final Date joinedAt;
@@ -21,7 +22,8 @@ public class UserDTO {
     public UserDTO(User user, long numberOfFollowers, long numberOfFollowings) {
         this.userId = user.getUserId();
         this.username = user.getUsername();
-        this.name = user.getName();
+        this.firstname = user.getFirstname();
+        this.lastname = user.getLastname();
         this.email = user.getEmail();
         this.birthDate = user.getBirthdate();
         this.joinedAt = user.getJoinedAt();
@@ -40,8 +42,12 @@ public class UserDTO {
         return username;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
     }
 
     public String getEmail() {

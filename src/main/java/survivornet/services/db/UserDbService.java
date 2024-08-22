@@ -22,6 +22,7 @@ import survivornet.repositories.FollowRepository;
 import survivornet.repositories.UserRepository;
 
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +45,16 @@ public class UserDbService {
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public User addUser(
             String username,
-            String name,
+            String firstname,
+            String lastname,
             String password,
             String email,
             Date birthDate,
-            String bio) {
+            String bio) throws SQLIntegrityConstraintViolationException {
         return persistUser(new User(username,
                 password,
-                name,
+                firstname,
+                lastname,
                 email,
                 birthDate,
                 Date.valueOf(LocalDate.now()),
@@ -61,7 +64,7 @@ public class UserDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public User persistUser(User user) {
+    public User persistUser(User user) throws SQLIntegrityConstraintViolationException {
         return this.userRepository.save(user);
     }
 
@@ -112,7 +115,7 @@ public class UserDbService {
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public List<User> searchUsers(String query, int chunk) {
-        return userRepository.findAllByUsernameContainingOrNameContaining(query, query, PageRequest.of(chunk, CHUNK_SIZE));
+        return userRepository.findAllByUsernameContainingOrFirstnameContainingOrLastnameContaining(query, query, query, PageRequest.of(chunk, CHUNK_SIZE));
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -163,5 +166,17 @@ public class UserDbService {
             throw new InvalidIdException("Invalid email");
         }
         return user.get();
+    }
+
+    public UserDTO updateProfile(String oldUsername, String firstname, String lastname, String username, String password, String email, Date birthdate) throws SQLIntegrityConstraintViolationException{
+        User user = userRepository.findUserByEmail(oldUsername).get();
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
+        user.setBirthdate(birthdate);
+        userRepository.save(user);
+        return getUserDtoByUsername(user.getUsername());
     }
 }

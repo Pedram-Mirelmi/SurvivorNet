@@ -1,6 +1,10 @@
 package survivornet.services.domain;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import survivornet.DTO.UserDTO;
 import survivornet.exceptions.UnauthorizedException;
 import survivornet.models.User;
@@ -8,6 +12,7 @@ import survivornet.services.AuthorizationService;
 import survivornet.services.db.UserDbService;
 
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 @Service
@@ -16,6 +21,7 @@ public class UserService {
     private final UserDbService userDbService;
     private final AuthorizationService authorizationService;
 
+    @Autowired
     public UserService(UserDbService userDbService,
                        AuthorizationService authorizationService) {
         this.userDbService = userDbService;
@@ -85,11 +91,16 @@ public class UserService {
         return userDbService.getUserByEmail(email);
     }
 
-    public UserDTO addUser(String username, String name, String password, String email, Date birthdate, String bio) {
-        return new UserDTO(userDbService.addUser(username, name, password, email, birthdate, bio), 0, 0);
+    public UserDTO addUser(String username, String firstname, String lastname, String password, String email, Date birthdate, String bio) throws SQLIntegrityConstraintViolationException {
+        return new UserDTO(userDbService.addUser(username, firstname, lastname, password, email, birthdate, bio), 0, 0);
     }
 
     public boolean authenticateByPassword(String username, String password) {
         return userDbService.authenticateByPassword(username, password);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public UserDTO updateProfile(String oldUsername, String firstname, String lastname, String username, String password, String email, Date birthdate) throws SQLIntegrityConstraintViolationException {
+        return userDbService.updateProfile(oldUsername, firstname, lastname, username, password, email, birthdate);
     }
 }

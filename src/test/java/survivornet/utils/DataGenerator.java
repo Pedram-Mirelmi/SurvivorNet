@@ -11,6 +11,7 @@ import survivornet.services.db.PostDbService;
 import survivornet.services.db.UserDbService;
 
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -35,7 +36,7 @@ public class DataGenerator {
         }
     }
     
-    public static void generateData(int numberOfUsers, int numberOfPosts, int numberOfComments) {
+    public static void generateData(int numberOfUsers, int numberOfPosts, int numberOfComments) throws SQLIntegrityConstraintViolationException {
         generateUsers(numberOfUsers);
         generateFollows(numberOfUsers/10, numberOfUsers/2);
         generatePosts(numberOfPosts);
@@ -130,11 +131,12 @@ public class DataGenerator {
     }
 
 
-    private static void generateUsers(long count) {
+    private static void generateUsers(long count) throws SQLIntegrityConstraintViolationException {
         for (int i = 0; i < count; i++) {
             User user = userDbService.addUser(
                     "username(" + i + ")",
-                    "name(" + i + ")",
+                    "fname(" + i + ")",
+                    "lname(" + i + ")",
                     "pass(" + i + ")",
                     "user" + i + "@survivornet.com",
                     Date.valueOf("2000-01-01"),

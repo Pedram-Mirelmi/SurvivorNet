@@ -11,7 +11,8 @@ public class Constants {
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
     public static final String EMAIL = "email";
-    public static final String NAME = "name";
+    public static final String FIRSTNAME = "firstname";
+    public static final String LASTNAME = "lastname";
 
     public static final String BIRTHDATE = "birthdate";
     public static final String STATUS = "status";
@@ -38,5 +39,6 @@ public class Constants {
     public static final String REACTION_TYPE = "reactionType";
     public static final String TEXT = "text";
     public static final String PICTURE_ID = "pictureId";
-    public static final String INFO = "info";
+    public static final String POST_INFO = "postInfo";
+    public static final String USER_INFO = "userInfo";
 }

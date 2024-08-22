@@ -9,6 +9,7 @@ import survivornet.services.db.PictureDbService;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 @Service
 public class PictureService {
@@ -29,13 +30,13 @@ public class PictureService {
         return picture;
     }
 
-    public Picture addProfilePicture(String username, MultipartFile file) throws IOException {
+    public Picture addProfilePicture(String username, MultipartFile file) throws IOException, SQLIntegrityConstraintViolationException {
         Picture picture = pictureDbService.addPictureForProfile(username);
         saveFile(file, picture.getPictureId() + ".png");
         return picture;
     }
 
-    public Picture addBackgroundProfilePicture(String username, MultipartFile file) throws IOException {
+    public Picture addBackgroundProfilePicture(String username, MultipartFile file) throws IOException, SQLIntegrityConstraintViolationException {
         Picture picture = pictureDbService.addBackgroundPictureForProfile(username);
         saveFile(file, picture.getPictureId() + ".png");
         return picture;

@@ -10,6 +10,8 @@ import survivornet.services.db.PostDbService;
 import survivornet.services.db.UserDbService;
 import survivornet.utils.DataGenerator;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -42,7 +44,7 @@ public class TestDataGenerator {
 
     @Test
     @Disabled
-    void test() {
+    void test() throws SQLIntegrityConstraintViolationException {
         DataGenerator.generateData(5, 2, 10);
     }
 }

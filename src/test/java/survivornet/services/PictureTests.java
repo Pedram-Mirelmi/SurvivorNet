@@ -15,6 +15,8 @@ import survivornet.services.db.PictureDbService;
 import survivornet.services.db.PostDbService;
 import survivornet.services.db.UserDbService;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
@@ -32,26 +34,23 @@ public class PictureTests {
 
     @Autowired
     private final PictureDbService pictureDbService;
-
-    @Autowired
-    private final EntityManagerFactory entityManagerFactory;
     
     private User integrationTestUser1;
     private Post integrationUser1Post1;
 
     @Autowired
-    public PictureTests(UserDbService userService, PostDbService postDbService, PictureDbService pictureDbService, EntityManagerFactory entityManagerFactory) {
+    public PictureTests(UserDbService userService, PostDbService postDbService, PictureDbService pictureDbService) {
         this.userDbService = userService;
         this.postDbService = postDbService;
         this.pictureDbService = pictureDbService;
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     @BeforeAll
-    void setUp() {
+    void setUp() throws SQLIntegrityConstraintViolationException {
         integrationTestUser1 = userDbService.addUser(
                 "integrationTestUser1",
-                "integrationTestUser1Name",
+                "integrationTestUser1FName",
+                "integrationTestUser1LName",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
@@ -69,7 +68,7 @@ public class PictureTests {
 
     @Test
     @Order(1)
-    void addProfilePicture() {
+    void addProfilePicture() throws SQLIntegrityConstraintViolationException {
         Picture picture = pictureDbService.addPictureForProfile(integrationTestUser1.getUsername());
         assertEquals(integrationTestUser1.getUsername(), picture.getOwner().getUsername());
         User user = userDbService.getUserByUsername(integrationTestUser1.getUsername());
@@ -79,7 +78,7 @@ public class PictureTests {
 
     @Test
     @Order(1)
-    void addBackgroundPicture() {
+    void addBackgroundPicture() throws SQLIntegrityConstraintViolationException {
         Picture picture = pictureDbService.addBackgroundPictureForProfile(integrationTestUser1.getUsername());
         assertEquals(integrationTestUser1.getUsername(), picture.getOwner().getUsername());
         User user = userDbService.getUserByUsername(integrationTestUser1.getUsername());

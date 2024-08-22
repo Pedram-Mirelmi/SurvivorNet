@@ -13,6 +13,7 @@ import survivornet.models.User;
 import survivornet.services.db.UserDbService;
 import survivornet.services.domain.UserService;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.ParseException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,18 +47,20 @@ class UserControllerTests {
     }
 
     @BeforeAll
-    void setUp() throws ParseException {
+    void setUp() throws ParseException, SQLIntegrityConstraintViolationException {
 
         integrationTestUser1 = userDbService.addUser(
                 "integrationTestUser1",
-                "integrationTestUser1Name",
+                "integrationTestUser1FName",
+                "integrationTestUser1LName",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser1");
         integrationTestUser2 = userDbService.addUser(
                 "integrationTestUser2",
-                "integrationTestUser2Name",
+                "integrationTestUser2FName",
+                "integrationTestUser2LName",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
                 null,
@@ -69,15 +72,17 @@ class UserControllerTests {
 	void testGetUserByUsername() throws UnauthorizedException {
     	UserDTO user = userService.getUserDTOByUsername(integrationTestUser1.getUsername(), integrationTestUser1.getUsername());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
-        assertEquals(integrationTestUser1.getName(), user.getName());
-	}
+        assertEquals(integrationTestUser1.getFirstname(), user.getFirstname());
+        assertEquals(integrationTestUser1.getLastname(), user.getLastname());
+    }
 
 	@Test
     @Order(1)
     void testGetUsernameByEmail() throws UnauthorizedException {
         UserDTO user = userService.getUserDTOByEmail(integrationTestUser1.getEmail(), integrationTestUser1.getEmail());
         assertEquals(integrationTestUser1.getUsername(), user.getUsername());
-        assertEquals(integrationTestUser1.getName(), user.getName());
+        assertEquals(integrationTestUser1.getFirstname(), user.getFirstname());
+        assertEquals(integrationTestUser1.getLastname(), user.getLastname());
     }
 
     @Test

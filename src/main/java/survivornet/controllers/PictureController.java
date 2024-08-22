@@ -10,6 +10,7 @@ import survivornet.utils.JWTUtility;
 import survivornet.utils.Constants;
 
 import java.io.IOException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Map;
 
 @RestController
@@ -39,7 +40,7 @@ public class PictureController {
     @PostMapping("profile-picture")
     public Map<String, String> addProfilePicture(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @RequestParam("picture.png") MultipartFile file) throws IOException {
+            @RequestParam("picture.png") MultipartFile file) throws IOException, SQLIntegrityConstraintViolationException {
         Picture picture = pictureService.addProfilePicture(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 file);
@@ -51,7 +52,7 @@ public class PictureController {
     @PostMapping("background-picture")
     public Map<String, String> addBackgroundPicture(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @RequestParam("picture.png") MultipartFile file) throws IOException {
+            @RequestParam("picture.png") MultipartFile file) throws IOException, SQLIntegrityConstraintViolationException {
         Picture picture = pictureService.addBackgroundProfilePicture(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 file);

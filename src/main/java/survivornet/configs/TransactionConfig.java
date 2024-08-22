@@ -10,13 +10,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class TransactionConfig {
 
-    @Autowired
-    private EntityManagerFactory entityManagerFactory;
+//    @Autowired
+//    private EntityManagerFactory entityManagerFactory;
 
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
-        return transactionManager;
-    }
+//    @Bean
+//    public PlatformTransactionManager transactionManager() {
+//        JpaTransactionManager transactionManager = new JpaTransactionManager();
+//        transactionManager.setEntityManagerFactory(entityManagerFactory);
+//        return transactionManager;
+//    }
 }

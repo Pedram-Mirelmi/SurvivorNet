@@ -21,7 +21,10 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String name;
+    private String firstname;
+
+    @Column(nullable = false)
+    private String lastname;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -95,10 +98,11 @@ public class User {
     private List<PostReaction> reactions;
 
 
-    public User(String username, String password, String name, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
+    public User(String username, String password, String firstname, String lastname, String email, Date birthdate, Date joinedAt, String bio, Picture profilePic, Picture backgroundPic) {
         this.username = username;
         this.password = password;
-        this.name = name;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.email = email;
         this.birthdate = birthdate;
         this.joinedAt = joinedAt;
@@ -132,12 +136,20 @@ public class User {
         this.username = username;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getEmail() {

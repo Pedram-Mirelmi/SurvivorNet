@@ -16,6 +16,7 @@ import survivornet.models.User;
 import survivornet.services.db.UserDbService;
 import survivornet.services.domain.PostService;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,17 +48,19 @@ public class PostControllerTests {
     }
 
     @BeforeAll
-    void setUp() {
+    void setUp() throws SQLIntegrityConstraintViolationException {
         integrationTestUser1 = userDbService.addUser(
                 "integrationTestUser1",
-                "integrationTestUser1Name",
+                "integrationTestUser1FName",
+                "integrationTestUser1LName",
                 "integrationTestUser1Pass",
                 "integrationTestUser1Email@SurvivorNet.com",
                 null,
                 "This is bio of integrationTestUser1");
         integrationTestUser2 = userDbService.addUser(
                 "integrationTestUser2",
-                "integrationTestUser2Name",
+                "integrationTestUser2FName",
+                "integrationTestUser1LName",
                 "integrationTestUser2Pass",
                 "integrationTestUser2Email@SurvivorNet.com",
                 null,
@@ -98,24 +101,24 @@ public class PostControllerTests {
     void getHomePosts() throws InvalidValueException {
         List<PostDTO> pedramHomePosts = postService.getHomePosts(integrationTestUser1.getUsername(), 0);
         List<PostDTO> minaHomePosts = postService.getHomePosts(integrationTestUser2.getUsername(), 0);
-        assertEquals(1, pedramHomePosts.size());
-        assertEquals(0, minaHomePosts.size());
+        assertEquals(3, pedramHomePosts.size());
+        assertEquals(1, minaHomePosts.size());
         userDbService.changeFollow(integrationTestUser2.getUsername(), integrationTestUser1.getUsername(), true);
         minaHomePosts = postService.getHomePosts(integrationTestUser2.getUsername(), 0);
-        assertEquals(2, minaHomePosts.size());
+        assertEquals(3, minaHomePosts.size());
 
         assertEquals(integrationUser2Post1.getTitle(), pedramHomePosts.get(0).getTitle());
 
         // descending!
-        assertEquals(integrationUser1Post1.getTitle(), minaHomePosts.get(1).getTitle());
-        assertEquals(integrationUser1Post2.getTitle(), minaHomePosts.get(0).getTitle());
-        assertEquals(integrationUser1Post1.getPostId(), minaHomePosts.get(0).getParentId());
+        assertEquals(integrationUser1Post1.getTitle(), minaHomePosts.get(2).getTitle());
+        assertEquals(integrationUser1Post2.getTitle(), minaHomePosts.get(1).getTitle());
+        assertEquals(integrationUser1Post1.getPostId(), minaHomePosts.get(1).getParentId());
 
 
         userDbService.changeFollow(integrationTestUser2.getUsername(), integrationTestUser1.getUsername(), false);
 
         minaHomePosts = postService.getHomePosts(integrationTestUser2.getUsername(), 0);
-        assertEquals(0, minaHomePosts.size());
+        assertEquals(1, minaHomePosts.size());
     }
 
     @Test

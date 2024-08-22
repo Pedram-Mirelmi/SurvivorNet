@@ -10,6 +10,8 @@ import survivornet.models.Post;
 import survivornet.models.User;
 import survivornet.repositories.PictureRepository;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 @Service
 public class PictureDbService {
     private final UserDbService userDbService;
@@ -25,7 +27,7 @@ public class PictureDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public Picture addPictureForProfile(String username) {
+    public Picture addPictureForProfile(String username) throws SQLIntegrityConstraintViolationException {
         User user = userDbService.getUserByUsername(username);
         if(user.getProfilePic() != null) {
             pictureRepository.delete(user.getProfilePic());
@@ -37,7 +39,7 @@ public class PictureDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public Picture addBackgroundPictureForProfile(String username) {
+    public Picture addBackgroundPictureForProfile(String username) throws SQLIntegrityConstraintViolationException {
         User user = userDbService.getUserByUsername(username);
         if(user.getBackgroundPic() != null) {
             pictureRepository.delete(user.getBackgroundPic());

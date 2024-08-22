@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class AuthController {
     }
 
     @PostMapping("oath/github")
-    public Map<String, String> oauthWithGithub(@RequestParam("code") String code) throws IOException, ParseException {
+    public Map<String, String> oauthWithGithub(@RequestParam("code") String code) throws IOException, ParseException, SQLIntegrityConstraintViolationException {
 
         String githubUserToken = getUserTokenFromGithub(code);
         JsonObject userInfo = getUserInfoFromGithub(githubUserToken);
@@ -43,7 +44,7 @@ public class AuthController {
         try {
             User user = userService.getUserByEmail(email);
         } catch (InvalidIdException e) { // new User
-            userService.addUser(username, username, null, email, null, "");
+            userService.addUser(username, "", username, null, email, null, "");
         }
         return Map.of(Constants.STATUS, Constants.SUCCESS,
                 Constants.AUTHORIZATION, JWTUtility.generateToken(username),
@@ -56,7 +57,7 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public Map<String, String> login(
+    public Map<String, Object> login(
             @RequestBody Map<String, String> body) throws UnauthorizedException {
         String username = body.get("username");
         String password = body.get("password");
@@ -66,31 +67,32 @@ public class AuthController {
         if (userService.authenticateByPassword(username, password)) {
             var authToken = JWTUtility.generateToken(username);
             return Map.of(Constants.AUTHORIZATION, authToken,
-                    Constants.STATUS, Constants.SUCCESS);
+                    Constants.USER_INFO, userService.getUserDTOByUsername(username, username));
         }
         throw new UnauthorizedException("Username or password was wrong");
     }
 
     @PostMapping("register")
-    public Map<String, String> register(@RequestBody Map<String, String> body) throws InvalidRequestParamsException {
+    public Map<String, Object> register(@RequestBody Map<String, String> body) throws InvalidRequestParamsException {
         try {
             String username = Objects.requireNonNull(body.get(Constants.USERNAME));
             String password = Objects.requireNonNull(body.get(Constants.PASSWORD));
-            String name = Objects.requireNonNull(body.get(Constants.NAME));
+            String firstname = Objects.requireNonNull(body.get(Constants.FIRSTNAME));
+            String lastname = Objects.requireNonNull(body.get(Constants.LASTNAME));
             String email = Objects.requireNonNull(body.get(Constants.EMAIL));
             Date birthDate = Date.valueOf(body.get(Constants.BIRTHDATE));
-            userService.addUser(username, name, password, email, birthDate, "");
+            var createdUser = userService.addUser(username, firstname, lastname, password, email, birthDate, "");
             var authToken = JWTUtility.generateToken(username);
-            return Map.of(Constants.STATUS, Constants.SUCCESS,
-                    Constants.AUTHORIZATION, authToken);
-        } catch (NullPointerException e) {
-            throw new InvalidRequestParamsException("All the Fields are required");
-        } catch (InvalidIdException e) {
+            return Map.of(Constants.AUTHORIZATION, authToken,
+                    Constants.USER_INFO, createdUser);
+        } catch (SQLIntegrityConstraintViolationException e) {
             throw new InvalidIdException("User already exists");
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new InvalidRequestParamsException("All the Fields are required");
         }
     }
 
-    //
+
     private String getUserTokenFromGithub(String code) throws IOException {
         return getResource("https://github.com/login/oauth/access_token?client_id="
                 + Secret.clientId + "&client_secret=" + Secret.clientSecret + "&code=" + code, Map.of("Accept", "application/vnd.github+json"))

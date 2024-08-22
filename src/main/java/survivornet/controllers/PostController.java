@@ -60,7 +60,7 @@ public class PostController {
                 parentId
         );
         return Map.of(Constants.SUCCESS, Constants.TRUE,
-                Constants.INFO, post);
+                Constants.POST_INFO, post);
     }
 
 
@@ -86,5 +86,4 @@ public class PostController {
                 postId,
                 chunk);
     }
-
 }

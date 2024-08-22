@@ -10,8 +10,11 @@ import survivornet.services.domain.UserService;
 import survivornet.utils.JWTUtility;
 import survivornet.utils.Constants;
 
+import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("api/users")
@@ -33,6 +36,31 @@ public class UserController {
         return userService.getUserDTOByUsername(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 username);
+    }
+
+    @PutMapping("{username}")
+    public UserDTO updateProfile(
+            @PathVariable(Constants.USERNAME) String oldUsername,
+            @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
+            @RequestBody Map<String, String> body) throws UnauthorizedException, InvalidValueException {
+        if(oldUsername.equals(JWTUtility.getUsernameFromToken(jwtToken))) {
+            try {
+                return userService.updateProfile(
+                    oldUsername,
+                    Objects.requireNonNull(body.get(Constants.FIRSTNAME)),
+                    Objects.requireNonNull(body.get(Constants.LASTNAME)),
+                    Objects.requireNonNull(body.get(Constants.USERNAME)),
+                    Objects.requireNonNull(body.get(Constants.PASSWORD)),
+                    Objects.requireNonNull(body.get(Constants.EMAIL)),
+                    Date.valueOf(body.get(Constants.BIRTHDATE))
+                );
+
+            } catch (SQLIntegrityConstraintViolationException e) {
+                throw new InvalidValueException("Couldn't update");
+            }
+        } else {
+            throw new UnauthorizedException("Unauthorized access to other user's profile");
+        }
     }
 
     @GetMapping("{username}/posts")
@@ -67,32 +95,32 @@ public class UserController {
                 chunk);
     }
 
-    @PostMapping("follow/{username}")
-    public Map<String, Object> followUser(@PathVariable(Constants.USERNAME) String followee,
+    @PostMapping("follow")
+    public Map<String, Object> followUser(@RequestParam(Constants.USERNAME) String followee,
                                           @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         boolean success = userService.changeFollow(username, followee, true);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
-    @DeleteMapping("follow/{username}")
-    public Map<String, Object> unfollowUser(@PathVariable(Constants.USERNAME) String followee,
+    @DeleteMapping("follow")
+    public Map<String, Object> unfollowUser(@RequestParam(Constants.USERNAME) String followee,
                                             @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         boolean success = userService.changeBlock(username, followee, false);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
-    @PostMapping("block/{username}")
-    public Map<String, Object> block(@PathVariable(Constants.USERNAME) String blockee,
+    @PostMapping("block")
+    public Map<String, Object> block(@RequestParam(Constants.USERNAME) String blockee,
                                      @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         boolean success = userService.changeBlock(username, blockee, true);
         return Map.of(Constants.STATUS, success ? Constants.SUCCESS : Constants.FAIL);
     }
 
-    @DeleteMapping("block/{username}")
-    public Map<String, Object> unblock(@PathVariable(Constants.USERNAME) String blockee,
+    @DeleteMapping("block")
+    public Map<String, Object> unblock(@RequestParam(Constants.USERNAME) String blockee,
                                        @RequestHeader(Constants.AUTHORIZATION) String jwtToken) {
         String username = JWTUtility.getUsernameFromToken(jwtToken);
         boolean success = userService.changeBlock(username, blockee, true);
