@@ -93,8 +93,9 @@ class UserControllerTests {
 
     @Test
     @Order(2)
-    void addFollowing() {
+    void addFollowing() throws UnauthorizedException {
         userService.changeFollow(integrationTestUser1.getUsername(), integrationTestUser2.getUsername(), true);
+        assertTrue(userService.getFollowStatus(integrationTestUser1.getUsername(), integrationTestUser1.getUsername(), integrationTestUser2.getUsername()));
     }
 
     @Test

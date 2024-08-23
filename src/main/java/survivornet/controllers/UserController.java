@@ -85,14 +85,24 @@ public class UserController {
     }
 
     @GetMapping("{username}/followings")
-    public List<UserDTO> getUserFollowings(
-            @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @PathVariable(Constants.USERNAME) String username,
-            @RequestParam(Constants.CHUNK) int chunk) throws UnauthorizedException {
+    public List<UserDTO> getUserFollowings(@RequestHeader(Constants.AUTHORIZATION) String jwtToken,
+                                           @PathVariable(Constants.USERNAME) String username,
+                                           @RequestParam(Constants.CHUNK) int chunk) throws UnauthorizedException {
         return userService.getUserFollowingsDTO(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 username,
                 chunk);
+    }
+
+    @GetMapping("follow-status")
+    public Map<String, Boolean> doesFollow(@RequestHeader(Constants.AUTHORIZATION) String jwtToken,
+                                           @RequestParam(Constants.FOLLOWER) String followerUsername,
+                                           @RequestParam(Constants.FOLLOWEE) String followeeUsername) throws UnauthorizedException {
+        return Map.of(Constants.STATUS,
+                userService.getFollowStatus(JWTUtility.getUsernameFromToken(jwtToken),
+                        followerUsername,
+                        followeeUsername)
+        );
     }
 
     @PostMapping("follow")

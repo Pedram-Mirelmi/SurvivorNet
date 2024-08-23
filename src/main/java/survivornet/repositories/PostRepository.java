@@ -19,6 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "   p.parent.postId," +
             "   p.parent.title) " +
             "FROM Post p " +
+            "LEFT JOIN p.parent parent " +
             "WHERE p.user.username=:username")
     List<PostDTO> findAllDtoByUsername(String username, Pageable pageable);
 
@@ -28,6 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "   p.parent.postId," +
             "   p.parent.title) " +
             "FROM Post p " +
+            "LEFT JOIN p.parent parent " +
             "WHERE p.postId=:postId")
     Optional<PostDTO> getDtoById(long postId);
 
@@ -38,6 +40,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "   p.parent.postId, " +
             "   p.parent.title) " +
             "FROM Post p " +
+            "LEFT JOIN p.parent parent " +
             "WHERE p.user.userId IN " +
             "    (SELECT uf.followee.userId FROM UserFollow uf" +
             "    WHERE uf.follower.username=:username) " +

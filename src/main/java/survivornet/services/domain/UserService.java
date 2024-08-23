@@ -73,15 +73,24 @@ public class UserService {
         }
     }
 
-   public boolean changeBlock(String blocker, String blockee, boolean clock) {
-       try {
-           userDbService.changeFollow(blocker, blockee, true);
-           return true;
-       }
-       catch (Exception e) {
-           return false;
-       }
-   }
+    public boolean changeBlock(String blocker, String blockee, boolean clock) {
+        try {
+            userDbService.changeFollow(blocker, blockee, true);
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean getFollowStatus(String viewerUsername, String followerUsername, String followeeUsername) throws UnauthorizedException {
+        if(!authorizationService.canViewFollowList(viewerUsername, followerUsername)
+                && !authorizationService.canViewFollowList(viewerUsername, followeeUsername)) {
+            throw new UnauthorizedException("User cannot access other user's any follow list");
+        }
+        return userDbService.getFollowStatus(followerUsername, followeeUsername);
+    }
+
 
     public List<UserDTO> searchUsers(String query, int chunk) {
         return userDbService.searchUsers(query, chunk).stream().map(user -> new UserDTO(user, 0, 0)).toList();

@@ -133,7 +133,7 @@ public class UserDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public boolean changeBlock(EntityManager entityManager, String blocker, String blockee, boolean block) {
+    public boolean changeBlock(String blocker, String blockee, boolean block) {
         if(block) {
             UserBlock userFollow = new UserBlock(getUserByUsername(blocker), getUserByUsername(blockee));
             blockRepository.save(userFollow);
@@ -178,5 +178,9 @@ public class UserDbService {
         user.setBirthdate(birthdate);
         userRepository.save(user);
         return getUserDtoByUsername(user.getUsername());
+    }
+
+    public boolean getFollowStatus(String followerUsername, String followeeUsername) {
+        return followRepository.findByFolloweeAndFollower(followerUsername, followeeUsername).isPresent();
     }
 }

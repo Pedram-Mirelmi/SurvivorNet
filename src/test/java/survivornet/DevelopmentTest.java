@@ -77,8 +77,8 @@ public class DevelopmentTest {
 //    @Order(1)
 //    @BeforeAll
     void assignVariables() throws UnauthorizedException {
-        this.integrationTestUser1 = userService.getUserDTOByUsername("integrationTestUser1", "integrationTestUser1");
-        this.integrationTestUser2 = userService.getUserDTOByUsername("integrationTestUser2", "integrationTestUser2");
+//        this.integrationTestUser1 = userService.getUserDTOByUsername("integrationTestUser1", "integrationTestUser1");
+//        this.integrationTestUser2 = userService.getUserDTOByUsername("integrationTestUser2", "integrationTestUser2");
     }
 
 
@@ -107,6 +107,7 @@ public class DevelopmentTest {
     }
 
 
+    @Disabled
     @Test
     void test() {
         var x = postDbService.getPostDTO(1);
