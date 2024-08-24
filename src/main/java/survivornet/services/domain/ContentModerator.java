@@ -20,7 +20,7 @@ public class ContentModerator implements IContentModerator {
     }
 
     @Override
-    public boolean isValidSolutionText(String SolutionText) {
+    public boolean isValidSuggestionText(String SolutionText) {
         return true;
     }
 

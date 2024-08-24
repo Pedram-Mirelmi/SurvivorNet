@@ -45,7 +45,7 @@ public class CommentDbService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public Comment addSolution(String username, long postId, String solutionText) {
+    public Comment addSuggestion(String username, long postId, String solutionText) {
         User user = userDbService.getUserByUsername(username);
         Post post = postDbService.getPostById(postId);
         return commentRepository.save(new Comment(user, post, solutionText, LocalDateTime.now(),null, true));
@@ -67,8 +67,8 @@ public class CommentDbService {
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<CommentDTO> getPostSolutions(long postId, int chunk) {
-        return commentRepository.findAllSolutionByPostId(postId, PageRequest.of(chunk, CHUNK_SIZE));
+    public List<CommentDTO> getPostSuggestions(long postId, int chunk) {
+        return commentRepository.findAllSuggestionsByPostId(postId, PageRequest.of(chunk, CHUNK_SIZE));
     }
 
     public boolean addCommentLike(String username, long commentId, boolean isLike) {

@@ -16,7 +16,7 @@ public class Comment {
     private Long commentId;
 
     @Column(nullable = false, name = "is_solution")
-    private boolean isSolution;
+    private boolean isSuggestion;
 
     @ManyToOne(targetEntity = Comment.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "parentId", referencedColumnName = "comment_id")
@@ -42,8 +42,8 @@ public class Comment {
             orphanRemoval = true)
     private List<CommentLike> likes;
 
-    public Comment(User user, Post post, String text, LocalDateTime createdAt, Comment parentComment, boolean isSolution) {
-        this.isSolution = isSolution;
+    public Comment(User user, Post post, String text, LocalDateTime createdAt, Comment parentComment, boolean isSuggestion) {
+        this.isSuggestion = isSuggestion;
         this.parentComment = parentComment;
         this.user = user;
         this.post = post;
@@ -65,8 +65,8 @@ public class Comment {
         return commentId;
     }
 
-    public boolean isSolution() {
-        return isSolution;
+    public boolean isSuggestion() {
+        return isSuggestion;
     }
 
     public Comment getParentComment() {

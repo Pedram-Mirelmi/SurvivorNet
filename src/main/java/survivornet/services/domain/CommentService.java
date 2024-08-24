@@ -34,18 +34,18 @@ public class CommentService {
                 0);
     }
 
-    public List<CommentDTO> getPostSolutions(String username, long postId, int chunk) throws UnauthorizedException {
+    public List<CommentDTO> getPostSuggestion(String username, long postId, int chunk) throws UnauthorizedException {
         if(!authorizationService.canViewPostComments(username, postId)) {
             throw new UnauthorizedException("User cannot view this post solutions");
         }
-        return commentDbService.getPostSolutions(postId, chunk);
+        return commentDbService.getPostSuggestions(postId, chunk);
     }
 
-    public CommentDTO addSolution(String username, long postId, String solutionText) throws UnauthorizedException {
-        if(!authorizationService.canAddSolution(username, postId)) {
+    public CommentDTO addSuggestion(String username, long postId, String solutionText) throws UnauthorizedException {
+        if(!authorizationService.canAddSuggestion(username, postId)) {
             throw new UnauthorizedException("User cannot add solution to this post");
         }
-        return new CommentDTO(commentDbService.addSolution(username, postId, solutionText),
+        return new CommentDTO(commentDbService.addSuggestion(username, postId, solutionText),
                 0,
                 0);
     }

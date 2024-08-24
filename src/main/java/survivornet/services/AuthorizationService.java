@@ -68,7 +68,7 @@ public class AuthorizationService {
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public boolean canAddSolution(String doerUsername, long postId) {
+    public boolean canAddSuggestion(String doerUsername, long postId) {
         // for now it's the same
         return canViewPost(doerUsername, postId);
     }

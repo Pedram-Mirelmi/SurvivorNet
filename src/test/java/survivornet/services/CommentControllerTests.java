@@ -1,7 +1,6 @@
 package survivornet.services;
 
 
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class CommentControllerTests {
 
     private CommentDTO comment1;
 
-    private CommentDTO solution1;
+    private CommentDTO suggestion1;
 
     @Autowired
     public CommentControllerTests(CommentDbService commentDbService, UserDbService userDbService, CommentService commentService, PostDbService postDbService) {
@@ -105,16 +104,16 @@ public class CommentControllerTests {
 
     @Test
     @Order(1)
-    void addAndGetSolutions() throws UnauthorizedException {
-        solution1 = commentService.addSolution(integrationTestUser1.getUsername(),
+    void addAndGetSuggestion() throws UnauthorizedException {
+        suggestion1 = commentService.addSuggestion(integrationTestUser1.getUsername(),
                 integrationUser1Post1.getPostId(),
                 "IntegrationTestSolution1's text");
-        List<CommentDTO> solutions = commentService.getPostSolutions(integrationTestUser1.getUsername(), integrationUser1Post1.getPostId(), 0);
+        List<CommentDTO> solutions = commentService.getPostSuggestion(integrationTestUser1.getUsername(), integrationUser1Post1.getPostId(), 0);
         assertEquals(1, solutions.size());
         CommentDTO solution_ = solutions.get(0);
-        assertEquals(solution1.getPostId(), solution_.getPostId());
-        assertEquals(solution1.getUser().getUsername(), solution_.getUser().getUsername());
-        assertEquals(solution1.getText(), solution_.getText());
+        assertEquals(suggestion1.getPostId(), solution_.getPostId());
+        assertEquals(suggestion1.getUser().getUsername(), solution_.getUser().getUsername());
+        assertEquals(suggestion1.getText(), solution_.getText());
     }
 
     @Test

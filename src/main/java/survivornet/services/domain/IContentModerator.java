@@ -7,7 +7,7 @@ public interface IContentModerator {
 
     boolean isValidCommentText(String commentText);
 
-    boolean isValidSolutionText(String SolutionText);
+    boolean isValidSuggestionText(String SolutionText);
 
     boolean isValidBio(String bioText);
 

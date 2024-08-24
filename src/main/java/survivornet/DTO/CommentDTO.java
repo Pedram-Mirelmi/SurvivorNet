@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class CommentDTO {
     private long commentId;
-    private boolean isSolution;
+    private boolean isSuggestion;
     private long parentId;
     private UserDTO user;
     private long postId;
@@ -16,7 +16,7 @@ public class CommentDTO {
 
     public CommentDTO(Comment comment, long numberOfLikes, long numberOfDislikes) {
         this.commentId = comment.getCommentId();
-        this.isSolution = comment.isSolution();
+        this.isSuggestion = comment.isSuggestion();
         this.parentId = comment.getParentComment() == null ? -1L : comment.getParentComment().getCommentId();
         this.user =  new UserDTO(comment.getUser(), 0, 0);
         this.postId = comment.getPost().getPostId();
@@ -33,12 +33,12 @@ public class CommentDTO {
         this.commentId = commentId;
     }
 
-    public boolean isSolution() {
-        return isSolution;
+    public boolean isSuggestion() {
+        return isSuggestion;
     }
 
-    public void setSolution(boolean solution) {
-        isSolution = solution;
+    public void setSuggestion(boolean suggestion) {
+        isSuggestion = suggestion;
     }
 
     public long getParentId() {

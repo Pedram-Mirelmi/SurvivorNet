@@ -68,36 +68,36 @@ public class CommentController {
     }
 
 
-    @GetMapping("solutions")
-    public List<CommentDTO> getSolutions(
+    @GetMapping("suggestions")
+    public List<CommentDTO> getSuggestions(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
             @PathVariable long postId,
             @RequestParam Optional<Integer> chunk) throws UnauthorizedException {
-        return commentService.getPostSolutions(
+        return commentService.getPostSuggestion(
                 JWTUtility.getUsernameFromToken(jwtToken),
                 postId,
                 chunk.orElse(0));
     }
 
-    @PostMapping("solutions")
-    public CommentDTO addSolution(
+    @PostMapping("suggestions")
+    public CommentDTO addSuggestion(
             @PathVariable(Constants.POST_ID) long postId,
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
-            @RequestBody Map<String, String> solution) throws InvalidRequestParamsException, UnauthorizedException {
-        String solutionText;
+            @RequestBody Map<String, String> suggestion) throws InvalidRequestParamsException, UnauthorizedException {
+        String suggestionText;
         try {
-            solutionText = solution.get(Constants.TEXT);
+            suggestionText = suggestion.get(Constants.TEXT);
         }
         catch (Exception e) {
-            throw new InvalidRequestParamsException("No text for solution provided");
+            throw new InvalidRequestParamsException("No text for suggestion provided");
         }
-        return commentService.addSolution(JWTUtility.getUsernameFromToken(jwtToken),
+        return commentService.addSuggestion(JWTUtility.getUsernameFromToken(jwtToken),
                 postId,
-                solutionText);
+                suggestionText);
     }
 
     @PostMapping("solutions/{commentId}/likes")
-    public Map<String, Object> likeSolution(
+    public Map<String, Object> likeSuggestion(
             @RequestHeader(Constants.AUTHORIZATION) String jwtToken,
             @PathVariable(Constants.COMMENT_ID) long commentId,
             @RequestParam(Constants.LIKES) boolean likes) {

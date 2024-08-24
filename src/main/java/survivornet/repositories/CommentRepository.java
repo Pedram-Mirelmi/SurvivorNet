@@ -27,5 +27,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "   ( SELECT COUNT (*) FROM CommentLike cl WHERE cl.comment.commentId=c.commentId AND cl.isLike=FALSE)) " +
             "FROM Comment c " +
             "WHERE c.post.postId=:postId AND c.isSolution=TRUE")
-    List<CommentDTO> findAllSolutionByPostId(long postId, Pageable of);
+    List<CommentDTO> findAllSuggestionsByPostId(long postId, Pageable of);
 }

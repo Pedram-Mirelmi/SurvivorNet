@@ -62,7 +62,7 @@ public class DataGenerator {
                     comments.add(commentService.addComment(owner.getUsername(), post.getPostId(), text, parentId));
                 }
                 else {
-                    comments.add(commentService.addSolution(owner.getUsername(), post.getPostId(), text));
+                    comments.add(commentService.addSuggestion(owner.getUsername(), post.getPostId(), text));
                 }
             }
         }
